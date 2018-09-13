@@ -1,7 +1,4 @@
-﻿using Xamarin.Forms.Xaml;
-
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
-namespace TestDI
+﻿namespace TestDI
 {
     public enum ApplicationPage
     {
