@@ -1,8 +1,8 @@
 language: csharp
 solution: TestDI.sln
-install:
+before_install:
+  - sudo apt-get install nunit-console
+before_script:
   - nuget restore TestDI.sln
-  - nuget install NUnit.Runners -Version 3.9.0 -OutputDirectory testrunner
-script:
-  - xbuild /p:Configuration=Release TestDI.sln
-  - mono ./testrunner/NUnit.Runners.*/tools/nunit-console.exe ./TestDi.UnitTests/bin/Release/MyProject.Tests.dll
+after_script:
+  - nunit-console TestDi.UnitTests/bin/Release/TestDi.UnitTests.dll
