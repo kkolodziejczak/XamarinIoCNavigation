@@ -11,6 +11,7 @@ namespace TestDI.Pages
 
         public LoginPage(LoginPageViewModel vm, INavigationService navigation)
         {
+            BackgroundColor = Color.Blue;
             _vm = vm;
             _navigation = navigation;
         }

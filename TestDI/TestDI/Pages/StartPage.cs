@@ -11,6 +11,7 @@ namespace TestDI.Pages
 
         public StartPage(StartPageViewModel vm, INavigationService navigation)
         {
+            BackgroundColor = Color.Red;
             _vm = vm;
             _navigation = navigation;
         }

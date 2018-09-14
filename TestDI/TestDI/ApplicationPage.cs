@@ -5,5 +5,6 @@
         LoginPage,
         MainMenuPage,
         SideBar,
+        ListViewPage,
     }
 }

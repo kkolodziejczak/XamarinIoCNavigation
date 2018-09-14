@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System.Reflection;
+using Autofac;
 using TestDI.Interfaces;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -23,35 +24,43 @@ namespace TestDI
 
             MainPage = new NavigationPage(new MainPage());
 
-            InitializeIoC();
-
-            // Start Application
-            ServiceLocalisator.Get<INavigationService>().GoToAsync(ApplicationPage.LoginPage);
-        }
-
-        private void InitializeIoC()
-        {
             //TODO: Get better grasp on how to get viewModels from other libs and assembles
             var assembly = GetType().Assembly;
+            InitializeIoC(assembly);
 
+            // Start Application
+            var navigationService = ServiceLocalisator.Get<INavigationService>();
+            navigationService.PopPageAndGoToAsync(ApplicationPage.LoginPage.ToString());
+        }
+
+        private void InitializeIoC(params Assembly[] assemblies)
+        {
             ServiceLocalisator = new ServiceLocalisator(builder =>
             {
                 // Register Forms NavigationService
-                builder.Register(c => MainPage.Navigation).As<INavigation>();
+                builder.RegisterInstance(MainPage.Navigation)
+                    .As<INavigation>()
+                    .SingleInstance();
+
+                // Register self
+                builder.Register(e => ServiceLocalisator)
+                    .As<IServiceLocalisator>()
+                    .SingleInstance();
 
                 // Register all items
                 builder.RegisterType<DownloadManager>();
                 // ...
 
                 // Register services
-                builder.RegisterAssemblyTypes(assembly)
+                builder.RegisterAssemblyTypes(assemblies)
                     .Where(t => t.Name.EndsWith("Service"))
-                    .AsImplementedInterfaces();
+                    .AsImplementedInterfaces()
+                    .SingleInstance();
 
                 // Register ViewModels
-                builder.RegisterAssemblyTypes(assembly)
+                builder.RegisterAssemblyTypes(assemblies)
                     .Where(t => t.Name.EndsWith("ViewModel"))
-                    .OnActivated(async viewModel =>
+                    .OnActivating(async viewModel =>
                     {
                         if (viewModel.Instance is IAsyncInitialization asyncViewModel)
                         {
@@ -60,7 +69,7 @@ namespace TestDI
                     });
 
                 // Register Pages
-                builder.RegisterAssemblyTypes(assembly)
+                builder.RegisterAssemblyTypes(assemblies)
                    .Where(t => t.Name.EndsWith("Page"));
             });
         }

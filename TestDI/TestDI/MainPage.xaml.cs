@@ -12,6 +12,7 @@ namespace TestDI
         public MainPage()
         {
             InitializeComponent();
+            BackgroundColor = Color.Pink;
         }
     }
 }
