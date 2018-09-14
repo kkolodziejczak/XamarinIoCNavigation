@@ -2,9 +2,7 @@
 using Autofac;
 using TestDI.Interfaces;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
-[assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace TestDI
 {
 
