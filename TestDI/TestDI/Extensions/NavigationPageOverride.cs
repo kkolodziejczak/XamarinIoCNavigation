@@ -12,6 +12,16 @@ namespace TestDI
             return navigationService.GoToAsync(page.ToString(), navigationParameters);
         }
 
+        public static Task PopPageAndGoToAsync(this INavigationService navigationService, ApplicationPage page, params (string key, object value)[] navigationParameters)
+        {
+            return navigationService.PopPageAndGoToAsync(page.ToString(), navigationParameters);
+        }
+
+        public static Task PopPageAndGoToAsync(this INavigationService navigationService, byte numberOfPagesToPop, ApplicationPage page, params (string key, object value)[] navigationParameters)
+        {
+            return navigationService.PopPageAndGoToAsync(numberOfPagesToPop, page.ToString(), navigationParameters);
+        }
+
         public static void InsertPageAfter(this INavigation navigation, Page page, Page after)
         {
             var navigationPagelist = navigation.NavigationStack.ToList();
