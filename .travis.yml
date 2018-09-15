@@ -4,5 +4,4 @@ dotnet: 2.1
 dist: trusty
 
 script:
-- chmod +x ./build/travis.sh
 - ./build/travis.sh
