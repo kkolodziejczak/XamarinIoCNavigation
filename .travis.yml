@@ -3,5 +3,5 @@ mono: none
 dotnet: 2.0.0
 dist: trusty
 script:
- - cd TestDI.UnitTests
+ - cd TestDi.UnitTests
  - dotnet test
