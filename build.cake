@@ -27,8 +27,18 @@ Task("Restore")
     DotNetCoreRestore(SOLUTION);
 });
 
-Task("Test")
+Task("Build")
     .IsDependentOn("Restore")
+    .Does(() =>
+{
+	DotNetCoreBuild("./TestDI.Tests/TestDI.Tests.csproj", new DotNetCoreBuildSettings {
+        Configuration = configuration,
+        NoRestore = true
+    });
+});
+
+Task("Test")
+    .IsDependentOn("Build")
     .Does(() => 
 {
     MiniCover(tool => 
@@ -46,7 +56,6 @@ Task("Test")
             .WithNonFatalThreshold()
             .GenerateReport(ReportType.CONSOLE)
     );
-    
 });
 
 Task("Coveralls")
