@@ -5,16 +5,15 @@ using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using NUnit.Framework;
-using TestDi.UnitTests.Fakes;
-using TestDI;
 using TestDI.Interfaces;
 using TestDI.Pages;
 using TestDI.Services;
+using TestDI.Tests.Fakes;
+using TestDI.Tests.Fakes.FakeXamarinForms;
 using Xamarin.Forms;
 
-namespace TestDi.UnitTests.Services
+namespace TestDI.Tests.Services
 {
-
     [TestFixture]
     public class NavigationServiceTests
     {
@@ -25,7 +24,8 @@ namespace TestDi.UnitTests.Services
         [OneTimeSetUp]
         public void ResourcesFixture()
         {
-            MockForms.Init();
+            // Always call this to ensure that XamarinForms is initialized!
+            FakeXamarinForms.Init();
         }
 
         [SetUp]
@@ -34,8 +34,7 @@ namespace TestDi.UnitTests.Services
             var testedAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .SingleOrDefault(assembly => assembly.GetName().Name == "TestDI");
 
-            Navigation = new FakeNavigation();
-            Navigation.PushAsync(new MainPage());
+            Navigation = new FakeNavigation(new MainPage());
             InitializeIoC(testedAssembly);
         }
 
@@ -161,6 +160,4 @@ namespace TestDi.UnitTests.Services
 
         #endregion
     }
-
-
 }

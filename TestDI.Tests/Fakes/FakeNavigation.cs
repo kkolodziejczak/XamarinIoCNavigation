@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
-namespace TestDi.UnitTests.Fakes
+namespace TestDI.Tests.Fakes
 {
     public class FakeNavigation : INavigation
     {
@@ -13,6 +13,11 @@ namespace TestDi.UnitTests.Fakes
         public IReadOnlyList<Page> ModalStack => _modalList;
 
         public IReadOnlyList<Page> NavigationStack => _navigationList;
+
+        public FakeNavigation(Page page)
+        {
+            PushAsync(page);
+        }
 
         public void InsertPageBefore(Page page, Page before)
         {
@@ -88,6 +93,4 @@ namespace TestDi.UnitTests.Fakes
             _navigationList.Remove(page);
         }
     }
-
-
 }

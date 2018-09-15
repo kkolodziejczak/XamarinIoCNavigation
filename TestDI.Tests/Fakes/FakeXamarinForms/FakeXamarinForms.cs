@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 
-namespace TestDi.UnitTests.Fakes
+namespace TestDI.Tests.Fakes.FakeXamarinForms
 {
-    public class MockForms
+    public class FakeXamarinForms
     {
         public static void Init()
         {
@@ -89,7 +87,8 @@ namespace TestDi.UnitTests.Fakes
         public void StartTimer(TimeSpan interval, Func<bool> callback)
         {
             Timer timer = null;
-            TimerCallback onTimeout = o => BeginInvokeOnMainThread(() => {
+            TimerCallback onTimeout = o => BeginInvokeOnMainThread(() =>
+            {
                 if (callback())
                     return;
 
