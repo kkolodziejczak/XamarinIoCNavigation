@@ -10,6 +10,7 @@ SetMiniCoverToolsProject("./minicover/minicover.csproj");
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 
+
 //////////////////////////////////////////////////////////////////////
 // TASKS
 //////////////////////////////////////////////////////////////////////
@@ -32,18 +33,15 @@ Task("Test")
 {
     MiniCover(tool => 
         {
-            foreach(var project in GetFiles("./TestDI*Tests/*.csproj"))
-            {
-                DotNetCoreTest(project.FullPath, new DotNetCoreTestSettings
-                {
-                    Configuration = configuration,
-                    NoRestore = true,
-                    NoBuild = true
-                });
-            }
+			DotNetCoreTest("./TestDI.Tests/TestDI.Tests.csproj", new DotNetCoreTestSettings
+			{
+				Configuration = configuration,
+				NoRestore = true,
+				NoBuild = true
+			});
         },
         new MiniCoverSettings()
-            .WithAssembliesMatching("./TestDI*Tests/*.dll")
+            .WithAssembliesMatching("./TestDI.Tests/bin/Debug/netcoreapp2.0/*.dll")
             .WithSourcesMatching("./TestDI/**/*.cs")
             .WithNonFatalThreshold()
             .GenerateReport(ReportType.CONSOLE)
