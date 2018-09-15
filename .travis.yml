@@ -1,8 +1,7 @@
 language: csharp
-solution: TestDI.sln
-before_install:
-  - sudo apt-get install nunit-console
-before_script:
-  - nuget restore TestDI.sln
-after_script:
-  - nunit-console TestDi.UnitTests/bin/Release/TestDi.UnitTests.dll
+mono: none
+dotnet: 2.0.0
+dist: trusty
+script:
+ - cd TestDI.UnitTests
+ - dotnet test

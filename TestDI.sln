@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDI.Android", "TestDI\Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDI", "TestDI\TestDI\TestDI.csproj", "{9DFBD4ED-DAC7-4E28-AD20-56B44769066D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDi.UnitTests", "TestDi.UnitTests\TestDi.UnitTests.csproj", "{D906948D-0FFF-4952-BEA5-2A37FBCC2FAE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDI.UnitTests", "TestDI\TestDI.UnitTests\TestDI.UnitTests.csproj", "{D906948D-0FFF-4952-BEA5-2A37FBCC2FAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

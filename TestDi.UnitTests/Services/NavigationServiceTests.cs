@@ -5,21 +5,28 @@ using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using NUnit.Framework;
+using TestDi.UnitTests.Fakes;
 using TestDI;
 using TestDI.Interfaces;
 using TestDI.Pages;
+using TestDI.Services;
 using Xamarin.Forms;
 
 namespace TestDi.UnitTests.Services
 {
+
     [TestFixture]
-    [NonParallelizable]
     public class NavigationServiceTests
     {
         public static IServiceLocalisator ServiceLocalisator { get; private set; }
-        public static Page MainPage { get; protected set; }
-        public INavigation Navigation 
-            => MainPage.Navigation;
+        public INavigation Navigation { get; protected set; }
+        private NavigationService _dummyInstance = new NavigationService(null, null);
+
+        [OneTimeSetUp]
+        public void ResourcesFixture()
+        {
+            MockForms.Init();
+        }
 
         [SetUp]
         public void Setup()
@@ -27,8 +34,8 @@ namespace TestDi.UnitTests.Services
             var testedAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .SingleOrDefault(assembly => assembly.GetName().Name == "TestDI");
 
-            MainPage = new NavigationPage(new MainPage());
-
+            Navigation = new FakeNavigation();
+            Navigation.PushAsync(new MainPage());
             InitializeIoC(testedAssembly);
         }
 
@@ -116,7 +123,7 @@ namespace TestDi.UnitTests.Services
             ServiceLocalisator = new ServiceLocalisator(builder =>
             {
                 // Register Forms NavigationService
-                builder.RegisterInstance(MainPage.Navigation)
+                builder.RegisterInstance(Navigation)
                     .As<INavigation>()
                     .SingleInstance();
 
@@ -150,7 +157,7 @@ namespace TestDi.UnitTests.Services
                 builder.RegisterAssemblyTypes(assemblies)
                    .Where(t => t.Name.EndsWith("Page"));
             });
-        } 
+        }
 
         #endregion
     }
