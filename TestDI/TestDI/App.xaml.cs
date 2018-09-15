@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Linq;
+using System.Reflection;
 using Autofac;
 using TestDI.Interfaces;
 using Xamarin.Forms;
@@ -22,9 +24,10 @@ namespace TestDI
 
             MainPage = new NavigationPage(new MainPage());
 
-            //TODO: Get better grasp on how to get viewModels from other libs and assembles
-            var assembly = GetType().Assembly;
-            InitializeIoC(assembly);
+            var AssembliesToImport = AppDomain.CurrentDomain.GetAssemblies()
+                .SingleOrDefault(assemblies => assemblies.GetName().Name == "TestDI"); // Add more names there.
+
+            InitializeIoC(AssembliesToImport);
 
             // Start Application
             var navigationService = ServiceLocalisator.Get<INavigationService>();

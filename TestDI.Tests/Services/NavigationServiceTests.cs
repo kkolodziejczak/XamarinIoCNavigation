@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -19,6 +20,8 @@ namespace TestDI.Tests.Services
     {
         public static IServiceLocalisator ServiceLocalisator { get; private set; }
         public INavigation Navigation { get; protected set; }
+
+        // create dummy item to ensure that Assembly is added
         private NavigationService _dummyInstance = new NavigationService(null, null);
 
         [OneTimeSetUp]
@@ -42,9 +45,7 @@ namespace TestDI.Tests.Services
         public async Task NavigationService_PopPagesToRoot()
         {
             var service = ServiceLocalisator.Get<INavigationService>();
-
             await service.GoToAsync(ApplicationPage.LoginPage);
-            Navigation.NavigationStack.Should().HaveCountGreaterThan(1);
 
             await service.PopPageToRootAsync();
 
@@ -56,9 +57,7 @@ namespace TestDI.Tests.Services
         public async Task NavigationService_PopPage()
         {
             var service = ServiceLocalisator.Get<INavigationService>();
-
             await service.GoToAsync(ApplicationPage.LoginPage);
-            Navigation.NavigationStack.Should().HaveCountGreaterThan(1);
 
             await service.PopPageAsync();
 
@@ -70,7 +69,6 @@ namespace TestDI.Tests.Services
         public async Task NavigationService_PopPage_Twice()
         {
             var service = ServiceLocalisator.Get<INavigationService>();
-
             await service.GoToAsync(ApplicationPage.LoginPage);
             await service.GoToAsync(ApplicationPage.SideBar);
 
@@ -103,7 +101,7 @@ namespace TestDI.Tests.Services
         }
 
         [Test]
-        public async Task NavigationService_PopOnePageAndGoTo()
+        public async Task NavigationService_PopPageAndGoTo()
         {
             var service = ServiceLocalisator.Get<INavigationService>();
 
@@ -114,6 +112,74 @@ namespace TestDI.Tests.Services
             Navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
         }
 
+        [Test]
+        public async Task NavigationService_PopPageAndGoToPage_BackTwoPages()
+        {
+            var service = ServiceLocalisator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.MainMenuPage);
+
+            await service.PopPageAndGoToAsync(2, ApplicationPage.ListViewPage);
+
+            Navigation.NavigationStack.Should().HaveCount(2);
+            Navigation.NavigationStack.First().Should().BeOfType(typeof(MainPage));
+            Navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
+        public async Task NavigationService_GoToPage_ReadNavigationProperties()
+        {
+            var service = ServiceLocalisator.Get<INavigationService>();
+
+            await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
+
+            service.NavigationParameters<int>("documentCount").Should().Be(5);
+        }
+
+        [Test]
+        public async Task NavigationService_GoToPage_ReadNavigationProperties_keyNoFound()
+        {
+            var service = ServiceLocalisator.Get<INavigationService>();
+
+            await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
+
+            Assert.Throws<KeyNotFoundException>(() =>
+            {
+                service.NavigationParameters<int>("documentCountSomethingElse");
+            });
+        }
+
+        [Test]
+        public async Task NavigationService_GoToPage_ReadNavigationProperties_InvalidCast()
+        {
+            var service = ServiceLocalisator.Get<INavigationService>();
+
+            await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
+
+            Assert.Throws<InvalidCastException>(() =>
+            {
+                service.NavigationParameters<string>("documentCount");
+            });
+        }
+
+        [Test]
+        public async Task NavigationService_PopTooManyPages()
+        {
+            var service = ServiceLocalisator.Get<INavigationService>();
+
+            await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => service.PopPageAsync(4));
+        }
+
+        [Test]
+        public void NavigationService_PopTooManyPagesAndGoToPage()
+        {
+            var service = ServiceLocalisator.Get<INavigationService>();
+
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
+        }
 
         #region Utils
 

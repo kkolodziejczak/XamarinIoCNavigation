@@ -24,8 +24,8 @@ namespace TestDI
 
         public static void InsertPageAfter(this INavigation navigation, Page page, Page after)
         {
-            var navigationPagelist = navigation.NavigationStack.ToList();
-            var afterPageIndex = navigationPagelist.IndexOf(after);
+            var pages = navigation.NavigationStack.ToList();
+            var afterPageIndex = pages.IndexOf(after);
 
             Page pageAboveAfter = null;
             if (afterPageIndex + 1 > navigation.NavigationStack.Count - 1)

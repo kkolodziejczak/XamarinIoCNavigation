@@ -31,9 +31,13 @@ namespace TestDI.Services
         {
             if (_naivagionParameters.ContainsKey(parameterKey))
             {
-                return (T)_naivagionParameters[parameterKey];
+                if (_naivagionParameters[parameterKey] is T value)
+                {
+                    return value;
+                }
+                throw new InvalidCastException($"{nameof(parameterKey)} is not a type of {typeof(T)}.");
             }
-            throw new KeyNotFoundException();
+            throw new KeyNotFoundException($"{nameof(parameterKey)} was not found in NavigationParameters");
         }
 
         public Task PopPageToRootAsync()
@@ -48,7 +52,7 @@ namespace TestDI.Services
 
             if (count > lastPageIndex)
             {
-                throw new IndexOutOfRangeException("You want to remove too many pages from Navigation Stack.");
+                throw new ArgumentOutOfRangeException(nameof(count), "You want to remove too many pages from Navigation Stack.");
             }
 
             if (count >= 2)
@@ -78,7 +82,7 @@ namespace TestDI.Services
 
             if (numberOfPagesToPop > lastPageIndex + 1)
             {
-                throw new IndexOutOfRangeException("You want to pop too many pages. That there is on the Navigation Stack.");
+                throw new ArgumentOutOfRangeException(nameof(numberOfPagesToPop), "You want to pop too many pages. That there is on the Navigation Stack.");
             }
 
             // remove unwanted pages
