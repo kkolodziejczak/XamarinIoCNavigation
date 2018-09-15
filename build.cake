@@ -53,6 +53,8 @@ Task("Test")
         new MiniCoverSettings()
             .WithAssembliesMatching("./TestDI.Tests/**/*.dll")
             .WithSourcesMatching("./TestDI/**/*.cs")
+            .WithoutSourcesMatching("./TestDI/**/*.g.cs")
+            .WithoutSourcesMatching("./TestDI/**/*.xaml.cs")
             .WithNonFatalThreshold()
             .GenerateReport(ReportType.CONSOLE)
     );
