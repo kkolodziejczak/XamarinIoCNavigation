@@ -47,10 +47,33 @@ namespace TestDI.Services
             => PopPageAsync(1);
 
         public Task PopPageAsync(byte count)
+            => RemoveUnwantedPages(count, null);
+
+        public Task GoToAsync(string destinationPageName, params (string key, object value)[] navigationParameters)
+        {
+            InitializeNavigationParameters(navigationParameters);
+            return _pageNavigation.PushAsync(GetNewPage(destinationPageName));
+        }
+
+        public Task PopPageAndGoToAsync(string destinationPageName, params (string key, object value)[] navigationParameters)
+            => PopPageAndGoToAsync(1, destinationPageName, navigationParameters);
+
+        public Task PopPageAndGoToAsync(byte numberOfPagesToPop, string destinationPageName, params (string key, object value)[] navigationParameters)
+            => RemoveUnwantedPages(numberOfPagesToPop, () => 
+            {
+                var lastPage = GetPage(GetLastPageIndex());
+                var newPage = GetNewPage(destinationPageName);
+                _pageNavigation.InsertPageBefore(newPage, lastPage);
+
+                InitializeNavigationParameters(navigationParameters);
+            });
+
+        private Task RemoveUnwantedPages(byte count, Action actionBeforePop)
         {
             var lastPageIndex = GetLastPageIndex();
+            var weWantToPopOnlyFirstPage = count == 1 && lastPageIndex == 0;
 
-            if (count > lastPageIndex)
+            if (count > lastPageIndex && !weWantToPopOnlyFirstPage)
             {
                 throw new ArgumentOutOfRangeException(nameof(count), "You want to remove too many pages from Navigation Stack.");
             }
@@ -64,42 +87,9 @@ namespace TestDI.Services
                 }
             }
 
+            actionBeforePop?.Invoke();
+
             return _pageNavigation.PopAsync();
-        }
-
-        public Task GoToAsync(string destinationPageName, params (string key, object value)[] navigationParameters)
-        {
-            InitializeNavigationParameters(navigationParameters);
-            return _pageNavigation.PushAsync(GetNewPage(destinationPageName));
-        }
-
-        public Task PopPageAndGoToAsync(string destinationPageName, params (string key, object value)[] navigationParameters)
-            => PopPageAndGoToAsync(1, destinationPageName, navigationParameters);
-
-        public Task PopPageAndGoToAsync(byte numberOfPagesToPop, string destinationPageName, params (string key, object value)[] navigationParameters)
-        {
-            var lastPageIndex = GetLastPageIndex();
-
-            if (numberOfPagesToPop > lastPageIndex + 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(numberOfPagesToPop), "You want to pop too many pages. That there is on the Navigation Stack.");
-            }
-
-            // remove unwanted pages
-            for (var i = 1; i <= numberOfPagesToPop - 1; i++) // -1 because we always pop minimum once at the end
-            {
-                var pageToRemove = GetPage(lastPageIndex - i);
-                _pageNavigation.RemovePage(pageToRemove);
-            }
-
-            var pageIndex = lastPageIndex == 0 ? lastPageIndex : lastPageIndex - numberOfPagesToPop;
-            var pageAfterPopping = GetPage(pageIndex);
-            var newPage = GetNewPage(destinationPageName);
-            _pageNavigation.InsertPageAfter(newPage, pageAfterPopping);
-
-            InitializeNavigationParameters(navigationParameters);
-
-            return PopPageAsync();
         }
 
         private Page GetNewPage(string destinationPageName)

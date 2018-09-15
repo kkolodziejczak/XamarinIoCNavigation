@@ -22,6 +22,8 @@ namespace TestDI
         {
             InitializeComponent();
 
+            //TODO: Fix insert after as of right now it is not successfull 100% of the time there is issue with pushing page after last page
+
             MainPage = new NavigationPage(new MainPage());
 
             var AssembliesToImport = AppDomain.CurrentDomain.GetAssemblies()

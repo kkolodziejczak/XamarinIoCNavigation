@@ -22,21 +22,5 @@ namespace TestDI
             return navigationService.PopPageAndGoToAsync(numberOfPagesToPop, page.ToString(), navigationParameters);
         }
 
-        public static void InsertPageAfter(this INavigation navigation, Page page, Page after)
-        {
-            var pages = navigation.NavigationStack.ToList();
-            var afterPageIndex = pages.IndexOf(after);
-
-            Page pageAboveAfter = null;
-            if (afterPageIndex + 1 > navigation.NavigationStack.Count - 1)
-            {
-                pageAboveAfter = navigation.NavigationStack[afterPageIndex];
-            }
-            else
-            {
-                pageAboveAfter = navigation.NavigationStack[afterPageIndex + 1];
-            }
-            navigation.InsertPageBefore(page, pageAboveAfter);
-        }
     }
 }
