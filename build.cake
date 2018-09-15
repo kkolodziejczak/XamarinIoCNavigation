@@ -41,7 +41,7 @@ Task("Test")
 			});
         },
         new MiniCoverSettings()
-            .WithAssembliesMatching("./TestDI.Tests/bin/Debug/netcoreapp2.0/*.dll")
+            .WithAssembliesMatching("./TestDI.Tests/**/*.dll")
             .WithSourcesMatching("./TestDI/**/*.cs")
             .WithNonFatalThreshold()
             .GenerateReport(ReportType.CONSOLE)
