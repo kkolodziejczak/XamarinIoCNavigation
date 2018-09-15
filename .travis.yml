@@ -3,7 +3,4 @@ mono: none
 dotnet: 2.0.0
 dist: trusty
 script:
- - cd TestDI.Tests
- - dotnet test
-after_success:
- - coveralls
+ - ./build/travis.sh
