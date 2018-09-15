@@ -5,3 +5,4 @@ dist: trusty
 script:
  - cd TestDI.Tests
  - dotnet test
+ after_success: coveralls
