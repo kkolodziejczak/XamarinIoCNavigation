@@ -22,7 +22,6 @@ Task("Clean")
 });
 
 Task("Restore")
-    .IsDependentOn("Clean")
     .Does(() =>
 {
     DotNetCoreRestore(SOLUTION);
