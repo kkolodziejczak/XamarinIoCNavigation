@@ -7,12 +7,12 @@ using TestDI.Interfaces;
 
 namespace TestDI
 {
-    public class ServiceLocalisator : IServiceLocalisator
+    public class ServiceLocator : IServiceLocator
     {
         private readonly ContainerBuilder _builder;
         private readonly IContainer _containter;
 
-        public ServiceLocalisator(Action<ContainerBuilder> builder)
+        public ServiceLocator(Action<ContainerBuilder> builder)
         {
             _builder = new ContainerBuilder();
             builder(_builder);

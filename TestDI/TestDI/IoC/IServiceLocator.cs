@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace TestDI.Interfaces
+namespace TestDI
 {
-    public interface IServiceLocalisator
+    public interface IServiceLocator
     {
         T Get<T>();
         object Get(Type type);

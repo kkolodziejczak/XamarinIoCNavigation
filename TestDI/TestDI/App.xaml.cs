@@ -3,26 +3,20 @@ using System.Linq;
 using System.Reflection;
 using Autofac;
 using TestDI.Interfaces;
+using TestDI.Navigation;
 using Xamarin.Forms;
 
 namespace TestDI
 {
 
-    public class DownloadManager
-    {
-        public int _a = 4;
-    }
-
     public partial class App : Application
     {
 
-        public static IServiceLocalisator ServiceLocalisator { get; private set; }
+        public static IServiceLocator ServiceLocator { get; private set; }
 
         public App()
         {
             InitializeComponent();
-
-            //TODO: Fix insert after as of right now it is not successfull 100% of the time there is issue with pushing page after last page
 
             MainPage = new NavigationPage(new MainPage());
 
@@ -32,13 +26,13 @@ namespace TestDI
             InitializeIoC(AssembliesToImport);
 
             // Start Application
-            var navigationService = ServiceLocalisator.Get<INavigationService>();
+            var navigationService = ServiceLocator.Get<INavigationService>();
             navigationService.PopPageAndGoToAsync(ApplicationPage.LoginPage.ToString());
         }
 
         private void InitializeIoC(params Assembly[] assemblies)
         {
-            ServiceLocalisator = new ServiceLocalisator(builder =>
+            ServiceLocator = new ServiceLocator(builder =>
             {
                 // Register Forms NavigationService
                 builder.RegisterInstance(MainPage.Navigation)
@@ -46,12 +40,11 @@ namespace TestDI
                     .SingleInstance();
 
                 // Register self
-                builder.Register(e => ServiceLocalisator)
-                    .As<IServiceLocalisator>()
+                builder.Register(e => ServiceLocator)
+                    .As<IServiceLocator>()
                     .SingleInstance();
 
-                // Register all items
-                builder.RegisterType<DownloadManager>();
+                // Register all other things
                 // ...
 
                 // Register services
