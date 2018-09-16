@@ -1,11 +1,9 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using TestDI.Interfaces;
-using Xamarin.Forms;
 
-namespace TestDI
+namespace TestDI.Navigation
 {
-    public static class NavigationPageOverride
+    public static class NavigationServiceExtensions
     {
         public static Task GoToAsync(this INavigationService navigationService, ApplicationPage page, params (string key, object value)[] navigationParameters)
         {

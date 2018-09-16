@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TestDI.Interfaces;
+using TestDI.Navigation;
 using TestDI.Pages;
 using Xamarin.Forms;
 
@@ -10,21 +10,21 @@ namespace TestDI.Services
     public class NavigationService : INavigationService
     {
         private readonly INavigation _pageNavigation;
-        private readonly IServiceLocalisator _serviceLocalisator;
+        private readonly IServiceLocator _serviceLocator;
         private readonly Dictionary<string, object> _naivagionParameters;
         private readonly Dictionary<ApplicationPage, Type> _applicationPages = new Dictionary<ApplicationPage, Type>
         {
-            { ApplicationPage.LoginPage, typeof(LoginPage) },
             { ApplicationPage.MainMenuPage, typeof(MainPage) },
             { ApplicationPage.SideBar, typeof(StartPage) },
+            { ApplicationPage.LoginPage, typeof(LoginPage) },
             { ApplicationPage.ListViewPage, typeof(ListViewPage) },
         };
 
-        public NavigationService(INavigation navigation, IServiceLocalisator serviceLocalisator)
+        public NavigationService(INavigation navigation, IServiceLocator serviceLocator)
         {
             _naivagionParameters = new Dictionary<string, object>();
             _pageNavigation = navigation;
-            _serviceLocalisator = serviceLocalisator;
+            _serviceLocator = serviceLocator;
         }
 
         public T NavigationParameters<T>(string parameterKey)
@@ -95,7 +95,7 @@ namespace TestDI.Services
         private Page GetNewPage(string destinationPageName)
         {
             Enum.TryParse(destinationPageName, out ApplicationPage applicationPage);
-            return (Page)_serviceLocalisator.Get(_applicationPages[applicationPage]);
+            return (Page)_serviceLocator.Get(_applicationPages[applicationPage]);
         }
 
         private Page GetPage(int index)

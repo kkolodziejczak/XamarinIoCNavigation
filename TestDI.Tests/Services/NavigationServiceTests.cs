@@ -7,6 +7,7 @@ using Autofac;
 using FluentAssertions;
 using NUnit.Framework;
 using TestDI.Interfaces;
+using TestDI.Navigation;
 using TestDI.Pages;
 using TestDI.Services;
 using TestDI.Tests.Fakes;
@@ -18,7 +19,7 @@ namespace TestDI.Tests.Services
     [TestFixture]
     public class NavigationServiceTests
     {
-        public static IServiceLocalisator ServiceLocalisator { get; private set; }
+        public static IServiceLocator ServiceLocator { get; private set; }
         public INavigation Navigation { get; protected set; }
 
         // create dummy item to ensure that Assembly is added
@@ -44,7 +45,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_PopPagesToRoot()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
             await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageToRootAsync();
@@ -56,7 +57,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_PopPage()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
             await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageAsync();
@@ -68,7 +69,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_PopPage_Twice()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
             await service.GoToAsync(ApplicationPage.LoginPage);
             await service.GoToAsync(ApplicationPage.SideBar);
 
@@ -81,7 +82,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_GoTo()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
 
             await service.GoToAsync(ApplicationPage.LoginPage);
 
@@ -92,7 +93,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_PopOnePageAndGoTo_withOnlyOnePageOnTheStack()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
 
             await service.PopPageAndGoToAsync(ApplicationPage.LoginPage);
 
@@ -103,7 +104,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_PopPageAndGoTo()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
 
             await service.GoToAsync(ApplicationPage.LoginPage);
             await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage);
@@ -115,7 +116,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_PopPageAndGoToPage_BackTwoPages()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
             await service.GoToAsync(ApplicationPage.LoginPage);
             await service.GoToAsync(ApplicationPage.MainMenuPage);
 
@@ -129,7 +130,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_GoToPage_ReadNavigationProperties()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
 
             await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
 
@@ -139,7 +140,7 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_GoToPage_ReadNavigationProperties_keyNoFound()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
 
             await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
 
@@ -152,20 +153,17 @@ namespace TestDI.Tests.Services
         [Test]
         public async Task NavigationService_GoToPage_ReadNavigationProperties_InvalidCast()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
 
             await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
 
-            Assert.Throws<InvalidCastException>(() =>
-            {
-                service.NavigationParameters<string>("documentCount");
-            });
+            Assert.Throws(typeof(InvalidCastException), () => service.NavigationParameters<string>("documentCount"));
         }
 
         [Test]
         public async Task NavigationService_PopTooManyPages()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
 
             await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
 
@@ -175,7 +173,7 @@ namespace TestDI.Tests.Services
         [Test]
         public void NavigationService_PopTooManyPagesAndGoToPage()
         {
-            var service = ServiceLocalisator.Get<INavigationService>();
+            var service = ServiceLocator.Get<INavigationService>();
 
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
@@ -185,7 +183,7 @@ namespace TestDI.Tests.Services
 
         private void InitializeIoC(params Assembly[] assemblies)
         {
-            ServiceLocalisator = new ServiceLocalisator(builder =>
+            ServiceLocator = new ServiceLocator(builder =>
             {
                 // Register Forms NavigationService
                 builder.RegisterInstance(Navigation)
@@ -193,12 +191,11 @@ namespace TestDI.Tests.Services
                     .SingleInstance();
 
                 // Register self
-                builder.Register(e => ServiceLocalisator)
-                    .As<IServiceLocalisator>()
+                builder.Register(e => ServiceLocator)
+                    .As<IServiceLocator>()
                     .SingleInstance();
 
                 // Register all items
-                builder.RegisterType<DownloadManager>();
                 // ...
 
                 // Register services

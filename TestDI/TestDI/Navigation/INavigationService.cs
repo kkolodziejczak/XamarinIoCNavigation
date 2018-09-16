@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace TestDI.Interfaces
+namespace TestDI.Navigation
 {
     public interface INavigationService
     {
