@@ -9,7 +9,6 @@ using NUnit.Framework;
 using TestDI.Interfaces;
 using TestDI.Navigation;
 using TestDI.Pages;
-using TestDI.Services;
 using TestDI.Tests.Fakes;
 using TestDI.Tests.Fakes.FakeXamarinForms;
 using Xamarin.Forms;
