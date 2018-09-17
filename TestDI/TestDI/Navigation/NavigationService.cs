@@ -2,23 +2,15 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TestDI.Navigation;
-using TestDI.Pages;
 using Xamarin.Forms;
 
-namespace TestDI.Services
+namespace TestDI.Navigation
 {
     public class NavigationService : INavigationService
     {
         private readonly INavigation _pageNavigation;
         private readonly IServiceLocator _serviceLocator;
         private readonly Dictionary<string, object> _naivagionParameters;
-        private readonly Dictionary<ApplicationPage, Type> _applicationPages = new Dictionary<ApplicationPage, Type>
-        {
-            { ApplicationPage.MainMenuPage, typeof(MainPage) },
-            { ApplicationPage.SideBar, typeof(StartPage) },
-            { ApplicationPage.LoginPage, typeof(LoginPage) },
-            { ApplicationPage.ListViewPage, typeof(ListViewPage) },
-        };
 
         public NavigationService(INavigation navigation, IServiceLocator serviceLocator)
         {
@@ -93,10 +85,7 @@ namespace TestDI.Services
         }
 
         private Page GetNewPage(string destinationPageName)
-        {
-            Enum.TryParse(destinationPageName, out ApplicationPage applicationPage);
-            return (Page)_serviceLocator.Get(_applicationPages[applicationPage]);
-        }
+            => (Page)_serviceLocator.Get(NavigationPageMap.PageMap[destinationPageName]);
 
         private Page GetPage(int index)
             => _pageNavigation.NavigationStack[index];
