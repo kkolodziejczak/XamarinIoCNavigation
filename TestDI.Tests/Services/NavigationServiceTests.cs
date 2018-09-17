@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using NUnit.Framework;
-using TestDI.Interfaces;
+using TestDI.Common;
 using TestDI.Navigation;
 using TestDI.Pages;
 using TestDI.Tests.Fakes;
@@ -54,12 +54,36 @@ namespace TestDI.Tests.Services
         }
 
         [Test]
+        public async Task NavigationService_PopPagesToRootAnimated()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopPageToRootAsync(true);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+        }
+
+        [Test]
         public async Task NavigationService_PopPage()
         {
             var service = ServiceLocator.Get<INavigationService>();
             await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageAsync();
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopPageAnimated()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopPageAsync(true);
 
             Navigation.NavigationStack.Should().HaveCount(1);
             Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
@@ -107,6 +131,18 @@ namespace TestDI.Tests.Services
 
             await service.GoToAsync(ApplicationPage.LoginPage);
             await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage);
+
+            Navigation.NavigationStack.Should().HaveCount(2);
+            Navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopPageAndGoToAnimated()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, true);
 
             Navigation.NavigationStack.Should().HaveCount(2);
             Navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
@@ -194,8 +230,10 @@ namespace TestDI.Tests.Services
                     .As<IServiceLocator>()
                     .SingleInstance();
 
-                // Register all items
-                // ...
+                // Register all other things
+                builder.RegisterType<PageLocator>()
+                    .As<IPageLocator>()
+                    .SingleInstance();
 
                 // Register services
                 builder.RegisterAssemblyTypes(assemblies)

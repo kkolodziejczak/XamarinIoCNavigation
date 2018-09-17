@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Autofac;
-using TestDI.Interfaces;
+using TestDI.Common;
 using TestDI.Navigation;
 using Xamarin.Forms;
 
 namespace TestDI
 {
+
+    public interface IAsyncInitialization
+    {
+        Task Initialization { get; }
+    }
 
     public partial class App : Application
     {
@@ -45,7 +51,9 @@ namespace TestDI
                     .SingleInstance();
 
                 // Register all other things
-                // ...
+                builder.RegisterType<PageLocator>()
+                    .As<IPageLocator>()
+                    .SingleInstance();
 
                 // Register services
                 builder.RegisterAssemblyTypes(assemblies)

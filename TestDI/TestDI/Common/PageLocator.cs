@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using TestDI.Navigation;
 using TestDI.Pages;
+using Xamarin.Forms;
 
-namespace TestDI.Navigation
+namespace TestDI.Common
 {
-    public static class NavigationPageMap
+    public class PageLocator : IPageLocator
     {
+        private readonly IServiceLocator _serviceLocator;
+
         public static readonly Dictionary<string, Type> PageMap = new Dictionary<string, Type>
         {
             { ApplicationPage.MainMenuPage.ToString(), typeof(MainPage) },
@@ -13,5 +17,15 @@ namespace TestDI.Navigation
             { ApplicationPage.LoginPage.ToString(), typeof(LoginPage) },
             { ApplicationPage.ListViewPage.ToString(), typeof(ListViewPage) },
         };
+
+        public PageLocator(IServiceLocator serviceLocator)
+        {
+            _serviceLocator = serviceLocator;
+        }
+
+        public Page GetPage(string pageName)
+        {
+            return (Page)_serviceLocator.Get(PageMap[pageName]);
+        }
     }
 }
