@@ -3,6 +3,7 @@ image: Visual Studio 2017
 environment:
   Coveralls_API_Key:
     secure: 5vIKm4jYwNAcCe3hulTaQSEZFZCIdgLrlKbqJoRCilA1f6/wfPQvNHt3qIPxz6by
+test: off
 init:
   # Good practise, because Windows line endings are different from Unix/Linux ones
   - cmd: git config --global core.autocrlf true

@@ -16,6 +16,7 @@ using Xamarin.Forms;
 namespace TestDI.Tests.Services
 {
     [TestFixture]
+    [NonParallelizable]
     public class NavigationServiceTests
     {
         public static IServiceLocator ServiceLocator { get; private set; }
@@ -179,10 +180,7 @@ namespace TestDI.Tests.Services
 
             await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
 
-            Assert.Throws<KeyNotFoundException>(() =>
-            {
-                service.NavigationParameters<int>("documentCountSomethingElse");
-            });
+            Assert.Throws<KeyNotFoundException>(() => service.NavigationParameters<int>("documentCountSomethingElse"));
         }
 
         [Test]
@@ -202,7 +200,7 @@ namespace TestDI.Tests.Services
 
             await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => service.PopPageAsync(4));
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.PopPageAsync(4));
         }
 
         [Test]
@@ -210,53 +208,53 @@ namespace TestDI.Tests.Services
         {
             var service = ServiceLocator.Get<INavigationService>();
 
-            Assert.Throws<ArgumentOutOfRangeException>(
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
         }
 
         [Test]
-        public void NavigationService_PopPage_WithModalPageOnTheStack()
+        public async Task NavigationService_PopPage_WithModalPageOnTheStack()
         {
             var pageNavigation = ServiceLocator.Get<INavigation>();
             var service = ServiceLocator.Get<INavigationService>();
 
-            pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
 
-            Assert.Throws<InvalidOperationException>(() => service.PopPageAsync());
+            Assert.ThrowsAsync<InvalidOperationException>(() => service.PopPageAsync());
         }
 
         [Test]
-        public void NavigationService_PopManyPages_WithModalPageOnTheStack()
+        public async Task NavigationService_PopManyPages_WithModalPageOnTheStack()
         {
             var pageNavigation = ServiceLocator.Get<INavigation>();
             var service = ServiceLocator.Get<INavigationService>();
 
-            pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
 
-            Assert.Throws<InvalidOperationException>(() => service.PopPageAsync(4));
+            Assert.ThrowsAsync<InvalidOperationException>(() => service.PopPageAsync(4));
         }
 
         [Test]
-        public void NavigationService_PopPageAndGoTo_WithModalPageOnTheStack()
+        public async Task NavigationService_PopPageAndGoTo_WithModalPageOnTheStack()
         {
             var pageNavigation = ServiceLocator.Get<INavigation>();
             var service = ServiceLocator.Get<INavigationService>();
 
-            pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
 
-            Assert.Throws<InvalidOperationException>(
+            Assert.ThrowsAsync<InvalidOperationException>(
                 () => service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, ("documentCount", 5)));
         }
 
         [Test]
-        public void NavigationService_PopManyPagesAndGoTo_WithModalPageOnTheStack()
+        public async Task NavigationService_PopManyPagesAndGoTo_WithModalPageOnTheStack()
         {
             var pageNavigation = ServiceLocator.Get<INavigation>();
             var service = ServiceLocator.Get<INavigationService>();
 
-            pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
 
-            Assert.Throws<InvalidOperationException>(
+            Assert.ThrowsAsync<InvalidOperationException>(
                 () => service.PopPageAndGoToAsync(4, ApplicationPage.ListViewPage, ("documentCount", 5)));
         }
 
