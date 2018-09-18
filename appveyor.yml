@@ -8,4 +8,4 @@ init:
   - cmd: git config --global core.autocrlf true
 build_script:
   # output will be in ./src/bin/debug/netcoreapp1.1/publish
-  - cmd: build.ps1 --target Coveralls
+  - cmd: ./build.ps1 --target Coveralls
