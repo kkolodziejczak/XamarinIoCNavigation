@@ -18,23 +18,27 @@ namespace TestDI.Navigation
         /// <summary>
         /// Removes all pages from Navigation Stack.
         /// </summary>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageToRootAsync();
 
         /// <summary>
         /// Removes all pages from Navigation Stack.
         /// </summary>
         /// <param name="animated">Animate the passage.</param>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageToRootAsync(bool animated);
 
         /// <summary>
         /// Removes current page from Navigation Stack.
         /// </summary>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageAsync();
 
         /// <summary>
         /// Removes current page from Navigation Stack.
         /// </summary>
         /// <param name="animated">Animate the passage.</param>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageAsync(bool animated);
 
         /// <summary>
@@ -74,6 +78,7 @@ namespace TestDI.Navigation
         /// </summary>
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageAndGoToAsync(string pageName, params (string key, object value)[] navigationParameters);
 
         /// <summary>
@@ -82,6 +87,7 @@ namespace TestDI.Navigation
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="animated">Animate the passage.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters);
 
         /// <summary>
