@@ -1,11 +1,13 @@
-#addin "nuget:?package=Cake.MiniCover&version=0.29.0-next20180721071547&prerelease"
+#addin Cake.Coveralls
+#tool "nuget:?package=OpenCover"
+
+#tool coveralls.io
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
 
-const string SOLUTION = "./TestDI.sln";
-SetMiniCoverToolsProject("./minicover/minicover.csproj");
+const string TEST_PROJECT = "./TestDI.Tests/TestDI.Tests.csproj";
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
@@ -18,61 +20,72 @@ var configuration = Argument("configuration", "Release");
 Task("Clean")
     .Does(() =>
 {
-    DotNetCoreClean(SOLUTION);
+    DeleteDirectories(GetDirectories("./**/bin") , 
+        new DeleteDirectorySettings 
+        {
+            Force = true,
+            Recursive = true,
+        });
+
+    DeleteDirectories(GetDirectories("./**/obj") , 
+        new DeleteDirectorySettings 
+        {
+            Force = true,
+            Recursive = true,
+        });
 });
 
 Task("Restore")
+    .IsDependentOn("Clean")
     .Does(() =>
 {
-    DotNetCoreRestore(SOLUTION);
+    DotNetCoreRestore(TEST_PROJECT);
 });
 
 Task("Build")
     .IsDependentOn("Restore")
     .Does(() =>
-{
-	DotNetCoreBuild("./TestDI.Tests/TestDI.Tests.csproj", new DotNetCoreBuildSettings {
-        Configuration = configuration,
-        NoRestore = true
+    {
+        DotNetCoreBuild(TEST_PROJECT,
+            new DotNetCoreBuildSettings 
+            {
+                Configuration = configuration,
+                ArgumentCustomization = arg => arg.AppendSwitch("/p:DebugType","=","Full")
+            });
     });
-});
 
 Task("Test")
     .IsDependentOn("Build")
     .Does(() => 
-{
-    MiniCover(tool => 
-        {
-			DotNetCoreTest("./TestDI.Tests/TestDI.Tests.csproj", new DotNetCoreTestSettings
-			{
-				Configuration = configuration,
-				NoRestore = true,
-				NoBuild = true
-			});
-        },
-        new MiniCoverSettings()
-            .WithAssembliesMatching("./TestDI.Tests/**/*.dll")
-            .WithSourcesMatching("./TestDI/**/Navigation/*.cs")
-            .WithNonFatalThreshold()
-            .GenerateReport(ReportType.CONSOLE)
-    );
-});
+    {
+        OpenCover(tool => 
+            {
+                tool.DotNetCoreTest(TEST_PROJECT,
+                    new DotNetCoreTestSettings(){
+                        Configuration = configuration,
+                        NoBuild = true,
+                    });
+            },
+            new FilePath("./OpenCover.xml"),
+            new OpenCoverSettings
+            {
+                SkipAutoProps = true,
+                ArgumentCustomization = arg => arg.Append("-hideskipped:All"),
+                MergeByHash = true,
+                OldStyle = true, // This fixes issue with dotnet core
+            }
+            .WithFilter("+[TestDI]TestDI.Navigation.*"));
+    });
 
 Task("Coveralls")
     .IsDependentOn("Test")
     .Does(() => 
-{
-    if (!TravisCI.IsRunningOnTravisCI)
     {
-        Warning("Not running on travis, cannot publish coverage");
-        return;
-    }
-
-    MiniCoverReport(new MiniCoverSettings()
-        .WithCoverallsSettings(c => c.UseTravisDefaults())
-        .GenerateReport(ReportType.COVERALLS)
-    );
-});
+        CoverallsIo("./OpenCover.xml", new CoverallsIoSettings()
+        {
+            RepoToken = EnvironmentVariable("Coveralls_API_Key") ?? null,
+        });
+    });
 
 //////////////////////////////////////////////////////////////////////
 // TASK TARGETS
