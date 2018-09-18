@@ -3,9 +3,8 @@ using System.Diagnostics;
 using Autofac;
 using Autofac.Core;
 using Autofac.Core.Registration;
-using TestDI.Interfaces;
 
-namespace TestDI
+namespace TestDI.Common
 {
     public class ServiceLocator : IServiceLocator
     {

@@ -8,6 +8,7 @@
 coverage.json
 coverage-hits.txt
 .vscode/
+OpenCover.xml
 
 # User-specific files
 *.suo
@@ -334,3 +335,4 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+

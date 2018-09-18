@@ -1,4 +1,4 @@
-﻿namespace TestDI
+﻿namespace TestDI.Common
 {
     public enum ApplicationPage
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestDI
+namespace TestDI.Common
 {
     public interface IServiceLocator
     {

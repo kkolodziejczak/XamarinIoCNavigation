@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TestDI.Navigation;
 using Xamarin.Forms;
 
 namespace TestDI.Navigation
@@ -9,14 +8,14 @@ namespace TestDI.Navigation
     public class NavigationService : INavigationService
     {
         private readonly INavigation _pageNavigation;
-        private readonly IServiceLocator _serviceLocator;
+        private readonly IPageLocator _pageLocator;
         private readonly Dictionary<string, object> _naivagionParameters;
 
-        public NavigationService(INavigation navigation, IServiceLocator serviceLocator)
+        public NavigationService(INavigation navigation, IPageLocator pageLocator)
         {
             _naivagionParameters = new Dictionary<string, object>();
             _pageNavigation = navigation;
-            _serviceLocator = serviceLocator;
+            _pageLocator = pageLocator;
         }
 
         public T NavigationParameters<T>(string parameterKey)
@@ -33,35 +32,58 @@ namespace TestDI.Navigation
         }
 
         public Task PopPageToRootAsync()
-            => _pageNavigation.PopToRootAsync();
+            => PopPageToRootAsync(false);
+
+        public Task PopPageToRootAsync(bool animated)
+            => _pageNavigation.PopToRootAsync(animated);
 
         public Task PopPageAsync()
-            => PopPageAsync(1);
+            => PopPageAsync(1, false);
+
+        public Task PopPageAsync(bool animated)
+            => PopPageAsync(1, animated);
 
         public Task PopPageAsync(byte count)
-            => RemoveUnwantedPages(count, null);
+            => PopPageAsync(count, false);
 
-        public Task GoToAsync(string destinationPageName, params (string key, object value)[] navigationParameters)
+        public Task PopPageAsync(byte count, bool animated)
+            => RemoveUnwantedPages(count, null, animated);
+
+        public Task GoToAsync(string pageName, params (string key, object value)[] navigationParameters)
+            => GoToAsync(pageName, false, navigationParameters);
+
+        public Task GoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
         {
             InitializeNavigationParameters(navigationParameters);
-            return _pageNavigation.PushAsync(GetNewPage(destinationPageName));
+            return _pageNavigation.PushAsync(_pageLocator.GetPage(pageName), animated);
         }
 
-        public Task PopPageAndGoToAsync(string destinationPageName, params (string key, object value)[] navigationParameters)
-            => PopPageAndGoToAsync(1, destinationPageName, navigationParameters);
+        public Task PopPageAndGoToAsync(string pageName, params (string key, object value)[] navigationParameters)
+            => PopPageAndGoToAsync(1, pageName, false, navigationParameters);
 
-        public Task PopPageAndGoToAsync(byte numberOfPagesToPop, string destinationPageName, params (string key, object value)[] navigationParameters)
-            => RemoveUnwantedPages(numberOfPagesToPop, () => 
+        public Task PopPageAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
+            => PopPageAndGoToAsync(1, pageName, animated, navigationParameters);
+
+        public Task PopPageAndGoToAsync(byte amount, string pageName, params (string key, object value)[] navigationParameters)
+            => PopPageAndGoToAsync(amount, pageName, false, navigationParameters);
+
+        public Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters)
+            => RemoveUnwantedPages(amount, () => 
             {
                 var lastPage = GetPage(GetLastPageIndex());
-                var newPage = GetNewPage(destinationPageName);
+                var newPage = _pageLocator.GetPage(pageName);
                 _pageNavigation.InsertPageBefore(newPage, lastPage);
 
                 InitializeNavigationParameters(navigationParameters);
-            });
+            }, animated);
 
-        private Task RemoveUnwantedPages(byte count, Action actionBeforePop)
+        private Task RemoveUnwantedPages(byte count, Action actionBeforePop, bool animated)
         {
+            if (_pageNavigation.ModalStack.Count != 0)
+            {
+                throw new InvalidOperationException("You cannot pop page when there is ModalPage on the stack.\nPop ModalPage first then try popping current page.");
+            }
+
             var lastPageIndex = GetLastPageIndex();
             var weWantToPopOnlyFirstPage = count == 1 && lastPageIndex == 0;
 
@@ -81,11 +103,8 @@ namespace TestDI.Navigation
 
             actionBeforePop?.Invoke();
 
-            return _pageNavigation.PopAsync();
+            return _pageNavigation.PopAsync(animated);
         }
-
-        private Page GetNewPage(string destinationPageName)
-            => (Page)_serviceLocator.Get(NavigationPageMap.PageMap[destinationPageName]);
 
         private Page GetPage(int index)
             => _pageNavigation.NavigationStack[index];

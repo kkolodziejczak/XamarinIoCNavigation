@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Autofac;
-using TestDI.Interfaces;
+using TestDI.Common;
 using TestDI.Navigation;
+using TestDI.Pages;
 using Xamarin.Forms;
 
 namespace TestDI
 {
+
+    public interface IAsyncInitialization
+    {
+        Task Initialization { get; }
+    }
 
     public partial class App : Application
     {
@@ -26,8 +33,14 @@ namespace TestDI
             InitializeIoC(AssembliesToImport);
 
             // Start Application
+            var n = MainPage.Navigation;
+
             var navigationService = ServiceLocator.Get<INavigationService>();
-            navigationService.PopPageAndGoToAsync(ApplicationPage.LoginPage.ToString());
+            navigationService.GoToAsync(ApplicationPage.MainMenuPage);
+            MainPage.Navigation.PushModalAsync(new LoginPage(navigationService));
+            navigationService.GoToAsync(ApplicationPage.MainMenuPage);
+            navigationService.PopPageAsync();
+            n = MainPage.Navigation;
         }
 
         private void InitializeIoC(params Assembly[] assemblies)
@@ -45,7 +58,9 @@ namespace TestDI
                     .SingleInstance();
 
                 // Register all other things
-                // ...
+                builder.RegisterType<PageLocator>()
+                    .As<IPageLocator>()
+                    .SingleInstance();
 
                 // Register services
                 builder.RegisterAssemblyTypes(assemblies)

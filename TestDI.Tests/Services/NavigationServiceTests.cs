@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using NUnit.Framework;
-using TestDI.Interfaces;
+using TestDI.Common;
 using TestDI.Navigation;
 using TestDI.Pages;
 using TestDI.Tests.Fakes;
@@ -16,6 +16,7 @@ using Xamarin.Forms;
 namespace TestDI.Tests.Services
 {
     [TestFixture]
+    [NonParallelizable]
     public class NavigationServiceTests
     {
         public static IServiceLocator ServiceLocator { get; private set; }
@@ -54,12 +55,36 @@ namespace TestDI.Tests.Services
         }
 
         [Test]
+        public async Task NavigationService_PopPagesToRootAnimated()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopPageToRootAsync(true);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+        }
+
+        [Test]
         public async Task NavigationService_PopPage()
         {
             var service = ServiceLocator.Get<INavigationService>();
             await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageAsync();
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopPageAnimated()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopPageAsync(true);
 
             Navigation.NavigationStack.Should().HaveCount(1);
             Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
@@ -113,6 +138,18 @@ namespace TestDI.Tests.Services
         }
 
         [Test]
+        public async Task NavigationService_PopPageAndGoToAnimated()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, true);
+
+            Navigation.NavigationStack.Should().HaveCount(2);
+            Navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
         public async Task NavigationService_PopPageAndGoToPage_BackTwoPages()
         {
             var service = ServiceLocator.Get<INavigationService>();
@@ -143,10 +180,7 @@ namespace TestDI.Tests.Services
 
             await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
 
-            Assert.Throws<KeyNotFoundException>(() =>
-            {
-                service.NavigationParameters<int>("documentCountSomethingElse");
-            });
+            Assert.Throws<KeyNotFoundException>(() => service.NavigationParameters<int>("documentCountSomethingElse"));
         }
 
         [Test]
@@ -166,7 +200,7 @@ namespace TestDI.Tests.Services
 
             await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
 
-            Assert.Throws<ArgumentOutOfRangeException>(() => service.PopPageAsync(4));
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.PopPageAsync(4));
         }
 
         [Test]
@@ -174,8 +208,54 @@ namespace TestDI.Tests.Services
         {
             var service = ServiceLocator.Get<INavigationService>();
 
-            Assert.Throws<ArgumentOutOfRangeException>(
+            Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
+        }
+
+        [Test]
+        public async Task NavigationService_PopPage_WithModalPageOnTheStack()
+        {
+            var pageNavigation = ServiceLocator.Get<INavigation>();
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+
+            Assert.ThrowsAsync<InvalidOperationException>(() => service.PopPageAsync());
+        }
+
+        [Test]
+        public async Task NavigationService_PopManyPages_WithModalPageOnTheStack()
+        {
+            var pageNavigation = ServiceLocator.Get<INavigation>();
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+
+            Assert.ThrowsAsync<InvalidOperationException>(() => service.PopPageAsync(4));
+        }
+
+        [Test]
+        public async Task NavigationService_PopPageAndGoTo_WithModalPageOnTheStack()
+        {
+            var pageNavigation = ServiceLocator.Get<INavigation>();
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+
+            Assert.ThrowsAsync<InvalidOperationException>(
+                () => service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, ("documentCount", 5)));
+        }
+
+        [Test]
+        public async Task NavigationService_PopManyPagesAndGoTo_WithModalPageOnTheStack()
+        {
+            var pageNavigation = ServiceLocator.Get<INavigation>();
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+
+            Assert.ThrowsAsync<InvalidOperationException>(
+                () => service.PopPageAndGoToAsync(4, ApplicationPage.ListViewPage, ("documentCount", 5)));
         }
 
         #region Utils
@@ -194,8 +274,10 @@ namespace TestDI.Tests.Services
                     .As<IServiceLocator>()
                     .SingleInstance();
 
-                // Register all items
-                // ...
+                // Register all other things
+                builder.RegisterType<PageLocator>()
+                    .As<IPageLocator>()
+                    .SingleInstance();
 
                 // Register services
                 builder.RegisterAssemblyTypes(assemblies)
