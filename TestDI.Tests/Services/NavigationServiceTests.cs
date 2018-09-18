@@ -214,6 +214,52 @@ namespace TestDI.Tests.Services
                 () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
         }
 
+        [Test]
+        public void NavigationService_PopPage_WithModalPageOnTheStack()
+        {
+            var pageNavigation = ServiceLocator.Get<INavigation>();
+            var service = ServiceLocator.Get<INavigationService>();
+
+            pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+
+            Assert.Throws<InvalidOperationException>(() => service.PopPageAsync());
+        }
+
+        [Test]
+        public void NavigationService_PopManyPages_WithModalPageOnTheStack()
+        {
+            var pageNavigation = ServiceLocator.Get<INavigation>();
+            var service = ServiceLocator.Get<INavigationService>();
+
+            pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+
+            Assert.Throws<InvalidOperationException>(() => service.PopPageAsync(4));
+        }
+
+        [Test]
+        public void NavigationService_PopPageAndGoTo_WithModalPageOnTheStack()
+        {
+            var pageNavigation = ServiceLocator.Get<INavigation>();
+            var service = ServiceLocator.Get<INavigationService>();
+
+            pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+
+            Assert.Throws<InvalidOperationException>(
+                () => service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, ("documentCount", 5)));
+        }
+
+        [Test]
+        public void NavigationService_PopManyPagesAndGoTo_WithModalPageOnTheStack()
+        {
+            var pageNavigation = ServiceLocator.Get<INavigation>();
+            var service = ServiceLocator.Get<INavigationService>();
+
+            pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
+
+            Assert.Throws<InvalidOperationException>(
+                () => service.PopPageAndGoToAsync(4, ApplicationPage.ListViewPage, ("documentCount", 5)));
+        }
+
         #region Utils
 
         private void InitializeIoC(params Assembly[] assemblies)

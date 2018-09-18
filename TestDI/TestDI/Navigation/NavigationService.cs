@@ -79,6 +79,11 @@ namespace TestDI.Navigation
 
         private Task RemoveUnwantedPages(byte count, Action actionBeforePop, bool animated)
         {
+            if (_pageNavigation.ModalStack.Count != 0)
+            {
+                throw new InvalidOperationException("You cannot pop page when there is ModalPage on the stack.\nPop ModalPage first then try popping current page.");
+            }
+
             var lastPageIndex = GetLastPageIndex();
             var weWantToPopOnlyFirstPage = count == 1 && lastPageIndex == 0;
 

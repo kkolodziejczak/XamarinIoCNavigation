@@ -42,6 +42,7 @@ namespace TestDI.Navigation
         /// </summary>s
         /// <param name="count">Number of pages to pop.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageAsync(byte count);
 
         /// <summary>
@@ -50,6 +51,7 @@ namespace TestDI.Navigation
         /// <param name="count">Number of pages to pop.</param>
         /// <param name="animated">Animate the passage.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageAsync(byte count, bool animated);
 
         /// <summary>
@@ -89,6 +91,7 @@ namespace TestDI.Navigation
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageAndGoToAsync(byte amount, string pageName, params (string key, object value)[] navigationParameters);
 
         /// <summary>
@@ -99,6 +102,7 @@ namespace TestDI.Navigation
         /// <param name="animated">Animate the passage.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="InvalidOperationException"/>
         Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters);
 
     }
