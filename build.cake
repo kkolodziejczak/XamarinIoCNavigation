@@ -106,7 +106,6 @@ Task("TestAndCover")
 
             // Generate Human readable coverage raport
             ReportGenerator(CoverResultFileName, $"{OutputDirectoryPath}/CoverageReport");
-            DeleteFile(CoverResultFileName);
             ReportUnit(OutputDirectoryPath, $"{OutputDirectoryPath}/TestReport", new ReportUnitSettings());
             DeleteFiles($"{OutputDirectoryPath}/*.trx");
     });
