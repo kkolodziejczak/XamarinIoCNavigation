@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using TestDI.Pages;
 using Xamarin.BetterNavigation.Forms;
+using Xamarin.BetterNavigation.UnitTests.Common.Pages;
+using Xamarin.BetterNavigation.UnitTests.Navigation;
 using Xamarin.Forms;
 
-namespace TestDI.Common
+namespace Xamarin.BetterNavigation.UnitTests.Common
 {
     public class PageLocator : IPageLocator
     {

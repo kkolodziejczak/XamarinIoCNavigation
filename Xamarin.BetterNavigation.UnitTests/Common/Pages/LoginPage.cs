@@ -1,7 +1,7 @@
 ﻿using Xamarin.BetterNavigation.Core;
 using Xamarin.Forms;
 
-namespace TestDI.Pages
+namespace Xamarin.BetterNavigation.UnitTests.Common.Pages
 {
     public class LoginPage : Page
     {

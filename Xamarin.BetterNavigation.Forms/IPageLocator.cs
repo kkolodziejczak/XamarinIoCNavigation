@@ -1,6 +1,6 @@
 ﻿using Xamarin.Forms;
 
-namespace TestDI.Navigation
+namespace Xamarin.BetterNavigation.Forms
 {
     public interface IPageLocator
     {

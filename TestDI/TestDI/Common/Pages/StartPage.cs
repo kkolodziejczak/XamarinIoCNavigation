@@ -1,4 +1,4 @@
-﻿using TestDI.Navigation;
+﻿using Xamarin.BetterNavigation.Core;
 using Xamarin.Forms;
 
 namespace TestDI.Pages
