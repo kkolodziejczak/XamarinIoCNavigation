@@ -15,7 +15,7 @@ readonly string ProjectName = "Xamarin.BetterNavigation";
 readonly DirectoryPath OutputDirectoryPath = "./Artifacts";
 readonly string CoverResultFileName = "OpenCover.xml";
 readonly string ArtifactFileName = "Artifacts.zip";
-readonly string CurrentBranchName = GitBranchCurrent(".").FriendlyName;
+readonly string CurrentBranchName = AppVeyor.IsRunningOnAppVeyor ? AppVeyor.Environment.Repository.Branch : GitBranchCurrent(".").FriendlyName;
 readonly GitVersion currentVersion = GitVersion();
 readonly string target = Argument("target", "Default");
 readonly string buildConfiguration = Argument("configuration", "Release");
@@ -38,12 +38,17 @@ readonly bool IsLocalBuild = BuildSystem.IsLocalBuild;
 
 Setup(context =>
 {
-    Information($"Local: {IsLocalBuild}");
-    Information($"Release: {IsOnRelease}");
-    Information($"Master: {IsOnMaster}");
-    Information($"Develop: {IsOnDevelop}");
-    Information($"CurrentBranch: {CurrentBranchName}");
-    Information($"[Appveyor]CurrentBranch: {AppVeyor.Environment.Repository.Branch}");
+    Information($"Debug information:");
+    Information($"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    Information($"Is Local Build: {IsLocalBuild}");
+    Information($"Is On Release: {IsOnRelease}");
+    Information($"Is On Master: {IsOnMaster}");
+    Information($"Is On Develop: {IsOnDevelop}");
+    Information($"Current Branch Name: {CurrentBranchName}");
+    Information($"Build Configuration: {buildConfiguration}");
+    Information($"Target: {target}");
+    Information($"Current Version: {currentVersion}");
+    Information($"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 });
 
 Task("Clean")
