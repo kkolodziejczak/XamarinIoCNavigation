@@ -43,6 +43,7 @@ Setup(context =>
     Information($"Master: {IsOnMaster}");
     Information($"Develop: {IsOnDevelop}");
     Information($"CurrentBranch: {CurrentBranchName}");
+    Information($"[Appveyor]CurrentBranch: {AppVeyor.Environment.Repository.Branch}");
 });
 
 Task("Clean")
