@@ -2,6 +2,7 @@
 #addin nuget:?package=Cake.Git
 #tool "nuget:?package=OpenCover"
 #tool "nuget:?package=GitVersion.CommandLine&prerelease"
+#tool "nuget:?package=gitreleasemanager"
 #tool "nuget:?package=ReportGenerator"
 #tool "nuget:?package=ReportUnit"
 #tool coveralls.io
@@ -11,20 +12,23 @@
 //////////////////////////////////////////////////////////////////////
 
 readonly string ProjectName = "Xamarin.BetterNavigation";
-readonly DirectoryPath OutputDirectoryPath = "./Artifacts/";
+readonly DirectoryPath OutputDirectoryPath = "./Artifacts";
 readonly string CoverResultFileName = "OpenCover.xml";
 readonly string ArtifactFileName = "Artifacts.zip";
+readonly string CurrentBranchName = GitBranchCurrent(".").FriendlyName;
 readonly GitVersion currentVersion = GitVersion();
 readonly string target = Argument("target", "Default");
 readonly string buildConfiguration = Argument("configuration", "Release");
+
+IEnumerable<FilePath> NugetFilePaths => GetFiles($"{OutputDirectoryPath}/*.nupkg");
 
 //////////////////////////////////////////////////////////////////////
 // FLAGS
 //////////////////////////////////////////////////////////////////////
 
-readonly bool IsOnMaster = GitBranchCurrent(".").FriendlyName == "master";
-readonly bool IsOnDevelop = GitBranchCurrent(".").FriendlyName == "develop";
-readonly bool IsOnRelease = GitBranchCurrent(".").FriendlyName.StartsWith("release/");
+readonly bool IsOnMaster = CurrentBranchName == "master";
+readonly bool IsOnDevelop = CurrentBranchName == "develop";
+readonly bool IsOnRelease = CurrentBranchName.StartsWith("release/");
 readonly bool IsLocalBuild = BuildSystem.IsLocalBuild;
 
 //////////////////////////////////////////////////////////////////////
@@ -145,52 +149,37 @@ Task("NuGetPack")
         }, ProjectFile.nuspec);
     });
 
-    private void UpdateNugetSpecVersion(string nugetSpecFilePath)
-    {
-        var updatedNuspec = System.IO.File.ReadAllText(nugetSpecFilePath)
-                    .Replace("@version", currentVersion.NuGetVersion);
-            System.IO.File.WriteAllText(nugetSpecFilePath, updatedNuspec);
-    }
-
-    private void ExecuteForEachNonTestProject(Action<FilePath> actionToExecute, ProjectFile file)
-    {
-        var str = $"./**/{ProjectName}.*.{file.ToString()}";
-        var files = GetFiles($"./**/{ProjectName}.*.{file.ToString()}");
-        foreach(var projectfile in files)
-        {
-            if(projectfile.FullPath.Contains("Tests"))
-                continue;
-
-            actionToExecute?.Invoke(projectfile);
-        }
-    }
-
-    private void ExecuteForEachTestProject(Action<FilePath> actionToExecute)
-    {
-        foreach(var projectfile in GetFiles($"./**/{ProjectName}.*Tests.csproj"))
-        {
-            actionToExecute?.Invoke(projectfile);
-        }
-    }
-
-public enum ProjectFile
-{
-    csproj,
-    nuspec,
-}
-
 Task("UploadNuGet")
     .WithCriteria(IsOnMaster || IsOnRelease)
     .WithCriteria(!IsLocalBuild)
     .Does(() =>
     {
-        // NuGetPack("dir", nuGetPackSettings);
+        NuGetPush(NugetFilePaths, new NuGetPushSettings()
+        {
+            ApiKey = EnvironmentVariable("Nuget_API_Key"),
+            Source = "https://nuget.org/api/v2/package",
+        });
     });
 
 Task("CollectArtifacts")
     .Does(() =>
     {
         Zip(OutputDirectoryPath, ArtifactFileName);
+    });
+
+Task("GitRelease")
+    .WithCriteria(IsOnMaster || IsOnRelease)
+    .WithCriteria(!IsLocalBuild)
+    .Does(() =>
+    {
+        GitReleaseManagerCreate(EnvironmentVariable("Git_Bot_Login"),
+                                EnvironmentVariable("Git_Bot_Password"),
+                                "kkolodziejczak",
+                                "https://github.com/kkolodziejczak/XamarinIoCNavigation",
+                                new GitReleaseManagerCreateSettings()
+                                {
+                                    Assets = string.Join(",", NugetFilePaths.Append($"./{ArtifactFileName}")),
+                                });
     });
 
 //////////////////////////////////////////////////////////////////////
@@ -211,7 +200,8 @@ Task("Deploy")
     .IsDependentOn("UploadCover")
     .IsDependentOn("NuGetPack")
     .IsDependentOn("UploadNuGet")
-    .IsDependentOn("CollectArtifacts");
+    .IsDependentOn("CollectArtifacts")
+    .IsDependentOn("GitRelease");
 
 Task("Coveralls")
     .IsDependentOn("Clean")
@@ -226,3 +216,39 @@ Task("Coveralls")
 //////////////////////////////////////////////////////////////////////
 
 RunTarget(target);
+
+//////////////////////////////////////////////////////////////////////
+// UTILS
+//////////////////////////////////////////////////////////////////////
+
+    private void UpdateNugetSpecVersion(string nugetSpecFilePath)
+    {
+        var updatedNuspec = System.IO.File.ReadAllText(nugetSpecFilePath)
+                    .Replace("@version", currentVersion.NuGetVersion);
+            System.IO.File.WriteAllText(nugetSpecFilePath, updatedNuspec);
+    }
+
+    private void ExecuteForEachNonTestProject(Action<FilePath> actionToExecute, ProjectFile file)
+    {
+        foreach(var projectfile in GetFiles($"./**/{ProjectName}.*.{file}"))
+        {
+            if(projectfile.FullPath.Contains("Tests"))
+                continue;
+
+            actionToExecute?.Invoke(projectfile);
+        }
+    }
+
+    private void ExecuteForEachTestProject(Action<FilePath> actionToExecute)
+    {
+        foreach(var projectfile in GetFiles($"./**/{ProjectName}.*Tests.csproj"))
+        {
+            actionToExecute?.Invoke(projectfile);
+        }
+    }
+
+    public enum ProjectFile
+    {
+        csproj,
+        nuspec,
+    }
