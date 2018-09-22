@@ -36,6 +36,15 @@ readonly bool IsLocalBuild = BuildSystem.IsLocalBuild;
 // TASKS
 //////////////////////////////////////////////////////////////////////
 
+Setup(context =>
+{
+    Information($"Local: {IsLocalBuild}");
+    Information($"Release: {IsOnRelease}");
+    Information($"Master: {IsOnMaster}");
+    Information($"Develop: {IsOnDevelop}");
+    Information($"CurrentBranch: {CurrentBranchName}");
+});
+
 Task("Clean")
     .ContinueOnError()
     .Does(() =>
