@@ -20,7 +20,8 @@ readonly GitVersion currentVersion = GitVersion();
 readonly string target = Argument("target", "Default");
 readonly string buildConfiguration = Argument("configuration", "Release");
 
-IEnumerable<FilePath> NugetFilePaths => GetFiles($"{OutputDirectoryPath}/*.nupkg");
+readonly string NugetPattern = $"{OutputDirectoryPath}/*.nupkg";
+IEnumerable<FilePath> NugetFilePaths => GetFiles(NugetPattern);
 
 //////////////////////////////////////////////////////////////////////
 // FLAGS
