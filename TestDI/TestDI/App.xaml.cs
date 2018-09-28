@@ -27,18 +27,15 @@ namespace TestDI
 
             MainPage = new NavigationPage(new MainPage());
 
-            var AssembliesToImport = AppDomain.CurrentDomain.GetAssemblies()
+            var assembliesToImport = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assemblies => assemblies.GetName().Name == "TestDI"
                                   || assemblies.GetName().Name.Contains("Xamarin.BetterNavigation")); // Add more names there.)
 
-            InitializeIoC(AssembliesToImport.ToArray());
+            InitializeIoC(assembliesToImport.ToArray());
 
             // Start Application
-            var n = MainPage.Navigation;
-
             var navigationService = ServiceLocator.Get<INavigationService>();
             navigationService.GoToAsync(ApplicationPage.ListViewPage);
-            n = MainPage.Navigation;
         }
 
         private void InitializeIoC(params Assembly[] assemblies)
@@ -69,7 +66,7 @@ namespace TestDI
                 // Register ViewModels
                 builder.RegisterAssemblyTypes(assemblies)
                     .Where(t => t.Name.EndsWith("ViewModel"))
-                    .OnActivating(async viewModel =>
+                    .OnActivated(async viewModel =>
                     {
                         if (viewModel.Instance is IAsyncInitialization asyncViewModel)
                         {
