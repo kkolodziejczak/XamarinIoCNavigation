@@ -213,52 +213,6 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
         }
 
-        [Test]
-        public async Task NavigationService_PopPage_WithModalPageOnTheStack()
-        {
-            var pageNavigation = ServiceLocator.Get<INavigation>();
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
-
-            Assert.ThrowsAsync<InvalidOperationException>(() => service.PopPageAsync());
-        }
-
-        [Test]
-        public async Task NavigationService_PopManyPages_WithModalPageOnTheStack()
-        {
-            var pageNavigation = ServiceLocator.Get<INavigation>();
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
-
-            Assert.ThrowsAsync<InvalidOperationException>(() => service.PopPageAsync(4));
-        }
-
-        [Test]
-        public async Task NavigationService_PopPageAndGoTo_WithModalPageOnTheStack()
-        {
-            var pageNavigation = ServiceLocator.Get<INavigation>();
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
-
-            Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, ("documentCount", 5)));
-        }
-
-        [Test]
-        public async Task NavigationService_PopManyPagesAndGoTo_WithModalPageOnTheStack()
-        {
-            var pageNavigation = ServiceLocator.Get<INavigation>();
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
-
-            Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.PopPageAndGoToAsync(4, ApplicationPage.ListViewPage, ("documentCount", 5)));
-        }
-
         #region Utils
 
         private void InitializeIoC(params Assembly[] assemblies)
