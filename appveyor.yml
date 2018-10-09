@@ -1,11 +1,21 @@
-version: 1.0.{build}
 image: Visual Studio 2017
+assembly_info:
+  patch: false
 environment:
   Coveralls_API_Key:
     secure: 5vIKm4jYwNAcCe3hulTaQSEZFZCIdgLrlKbqJoRCilA1f6/wfPQvNHt3qIPxz6by
+  Git_Bot_Login:
+    secure: kBVdnmCCL+1WEc5iQYJUy582pE05P87vtTSMTvALmM0=
+  Git_Bot_Password:
+    secure: uL1hHV4/QIYAyFd2JZZH9ox68LYeROBeI5cJrxwdWbs=
+  Nuget_API_Key:
+    secure: KlP0rpG+FI/4Yj06EXqrxE372CyYSiqgqqReaBvStrqOKchPjwHAINPJgkds+QK0
 test: off
 init:
   # Good practise, because Windows line endings are different from Unix/Linux ones
   - cmd: git config --global core.autocrlf true
 build_script:
-  - ps: .\build.ps1 -Target Coveralls
+  - ps: .\build.ps1 -target Deploy
+artifacts:
+- path: ./Artifacts
+deploy: off

@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using NUnit.Framework;
-using TestDI.Common;
-using TestDI.Navigation;
-using TestDI.Pages;
-using TestDI.Tests.Fakes;
-using TestDI.Tests.Fakes.FakeXamarinForms;
+using Xamarin.BetterNavigation.Core;
+using Xamarin.BetterNavigation.Forms;
+using Xamarin.BetterNavigation.UnitTests.Common;
+using Xamarin.BetterNavigation.UnitTests.Common.Pages;
+using Xamarin.BetterNavigation.UnitTests.Fakes;
+using Xamarin.BetterNavigation.UnitTests.Fakes.FakeXamarinForms;
 using Xamarin.Forms;
 
-namespace TestDI.Tests.Services
+namespace Xamarin.BetterNavigation.UnitTests.Navigation
 {
     [TestFixture]
     [NonParallelizable]
@@ -36,10 +37,10 @@ namespace TestDI.Tests.Services
         public void Setup()
         {
             var testedAssembly = AppDomain.CurrentDomain.GetAssemblies()
-                .SingleOrDefault(assembly => assembly.GetName().Name == "TestDI");
-
+                .Where(assembly => assembly.GetName().Name.Contains("Xamarin.BetterNavigation"));
+            
             Navigation = new FakeNavigation(new MainPage());
-            InitializeIoC(testedAssembly);
+            InitializeIoC(testedAssembly.ToArray());
         }
 
         [Test]
@@ -212,52 +213,6 @@ namespace TestDI.Tests.Services
                 () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
         }
 
-        [Test]
-        public async Task NavigationService_PopPage_WithModalPageOnTheStack()
-        {
-            var pageNavigation = ServiceLocator.Get<INavigation>();
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
-
-            Assert.ThrowsAsync<InvalidOperationException>(() => service.PopPageAsync());
-        }
-
-        [Test]
-        public async Task NavigationService_PopManyPages_WithModalPageOnTheStack()
-        {
-            var pageNavigation = ServiceLocator.Get<INavigation>();
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
-
-            Assert.ThrowsAsync<InvalidOperationException>(() => service.PopPageAsync(4));
-        }
-
-        [Test]
-        public async Task NavigationService_PopPageAndGoTo_WithModalPageOnTheStack()
-        {
-            var pageNavigation = ServiceLocator.Get<INavigation>();
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
-
-            Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, ("documentCount", 5)));
-        }
-
-        [Test]
-        public async Task NavigationService_PopManyPagesAndGoTo_WithModalPageOnTheStack()
-        {
-            var pageNavigation = ServiceLocator.Get<INavigation>();
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await pageNavigation.PushModalAsync(ServiceLocator.Get<IPageLocator>().GetPage("LoginPage"));
-
-            Assert.ThrowsAsync<InvalidOperationException>(
-                () => service.PopPageAndGoToAsync(4, ApplicationPage.ListViewPage, ("documentCount", 5)));
-        }
-
         #region Utils
 
         private void InitializeIoC(params Assembly[] assemblies)
@@ -287,14 +242,7 @@ namespace TestDI.Tests.Services
 
                 // Register ViewModels
                 builder.RegisterAssemblyTypes(assemblies)
-                    .Where(t => t.Name.EndsWith("ViewModel"))
-                    .OnActivating(async viewModel =>
-                    {
-                        if (viewModel.Instance is IAsyncInitialization asyncViewModel)
-                        {
-                            await asyncViewModel.Initialization;
-                        }
-                    });
+                    .Where(t => t.Name.EndsWith("ViewModel"));
 
                 // Register Pages
                 builder.RegisterAssemblyTypes(assemblies)

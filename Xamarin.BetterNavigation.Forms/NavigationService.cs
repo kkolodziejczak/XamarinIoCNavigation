@@ -1,28 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Xamarin.BetterNavigation.Core;
 using Xamarin.Forms;
 
-namespace TestDI.Navigation
+namespace Xamarin.BetterNavigation.Forms
 {
     public class NavigationService : INavigationService
     {
         private readonly INavigation _pageNavigation;
         private readonly IPageLocator _pageLocator;
-        private readonly Dictionary<string, object> _naivagionParameters;
+        private readonly Dictionary<string, object> _navigationParameters;
 
         public NavigationService(INavigation navigation, IPageLocator pageLocator)
         {
-            _naivagionParameters = new Dictionary<string, object>();
+            _navigationParameters = new Dictionary<string, object>();
             _pageNavigation = navigation;
             _pageLocator = pageLocator;
         }
 
         public T NavigationParameters<T>(string parameterKey)
         {
-            if (_naivagionParameters.ContainsKey(parameterKey))
+            if (_navigationParameters.ContainsKey(parameterKey))
             {
-                if (_naivagionParameters[parameterKey] is T value)
+                if (_navigationParameters[parameterKey] is T value)
                 {
                     return value;
                 }
@@ -68,7 +69,7 @@ namespace TestDI.Navigation
             => PopPageAndGoToAsync(amount, pageName, false, navigationParameters);
 
         public Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters)
-            => RemoveUnwantedPages(amount, () => 
+            => RemoveUnwantedPages(amount, () =>
             {
                 var lastPage = GetPage(GetLastPageIndex());
                 var newPage = _pageLocator.GetPage(pageName);
@@ -79,11 +80,6 @@ namespace TestDI.Navigation
 
         private Task RemoveUnwantedPages(byte count, Action actionBeforePop, bool animated)
         {
-            if (_pageNavigation.ModalStack.Count != 0)
-            {
-                throw new InvalidOperationException("You cannot pop page when there is ModalPage on the stack.\nPop ModalPage first then try popping current page.");
-            }
-
             var lastPageIndex = GetLastPageIndex();
             var weWantToPopOnlyFirstPage = count == 1 && lastPageIndex == 0;
 
@@ -114,10 +110,10 @@ namespace TestDI.Navigation
 
         private void InitializeNavigationParameters(params (string key, object value)[] navigationParameters)
         {
-            _naivagionParameters.Clear();
+            _navigationParameters.Clear();
             foreach (var (key, value) in navigationParameters)
             {
-                _naivagionParameters.Add(key, value);
+                _navigationParameters.Add(key, value);
             }
         }
     }

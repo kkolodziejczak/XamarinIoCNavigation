@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace TestDI.Navigation
+namespace Xamarin.BetterNavigation.Core
 {
     public interface INavigationService
     {

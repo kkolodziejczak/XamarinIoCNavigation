@@ -9,6 +9,9 @@ coverage.json
 coverage-hits.txt
 .vscode/
 OpenCover.xml
+[Aa]rtifacts/
+[Aa]rtifacts.*
+
 
 # User-specific files
 *.suo

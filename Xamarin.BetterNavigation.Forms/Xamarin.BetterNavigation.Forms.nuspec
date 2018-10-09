@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Xamarin.BetterNavigation.Forms</id>
+    <version>@version</version>
+    <title>Better navigation Plugin for Xamarin Forms</title>
+    <authors>Krzysztof Kołodziejczak</authors>
+    <licenseUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+    Xamarin.BetterNavigation.Forms contains inmplementation of Navigation service providing better navigation through application.
+    Xamarin.BetterNavigation.Core contains interfaces that easly allows to inverse dependencies in code and still being able to use navigation without knowing anything about Xamarin.Forms.
+    </description>
+    <summary>Xamarin Forms plugin to navigate easily and fluently.</summary>
+    <tags>xamarin, forms, xamarin.forms, quick, easy, navigation</tags>
+
+    <dependencies>
+    
+      <group>
+        <dependency id="Xamarin.BetterNavigation.Core" version="@version" />
+        <dependency id="Xamarin.Forms" version="2.4" />
+      </group>
+
+    </dependencies>
+
+  </metadata>
+
+    <files>
+
+        <!--Net Standard-->
+        <file src="Xamarin.BetterNavigation.Forms\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Forms.dll" target="lib\netstandard2.0\Xamarin.BetterNavigation.Forms.dll" />
+        <file src="Xamarin.BetterNavigation.Forms\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Forms.xml" target="lib\netstandard2.0\Xamarin.BetterNavigation.Forms.xml" />
+        <file src="Xamarin.BetterNavigation.Forms\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Forms.pdb" target="lib\netstandard2.0\Xamarin.BetterNavigation.Forms.pdb" />
+
+    </files>
+    
+</package>

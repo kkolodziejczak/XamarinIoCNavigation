@@ -1,15 +1,15 @@
 ﻿using Xamarin.BetterNavigation.Core;
 using Xamarin.Forms;
 
-namespace TestDI.Pages
+namespace Xamarin.BetterNavigation.UnitTests.Common.Pages
 {
-    public class LoginPage : Page
+    public class StartPage : Page
     {
         private readonly INavigationService _navigation;
 
-        public LoginPage(INavigationService navigation)
+        public StartPage(INavigationService navigation)
         {
-            BackgroundColor = Color.Blue;
+            BackgroundColor = Color.Red;
             _navigation = navigation;
         }
     }

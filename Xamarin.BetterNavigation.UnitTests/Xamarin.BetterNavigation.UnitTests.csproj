@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.9.0-beta1" />
     <PackageReference Include="FluentAssertions" Version="5.4.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="NUnit" Version="3.10.1" />
@@ -12,7 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TestDI\TestDI\TestDI.csproj" />
+    <ProjectReference Include="..\Xamarin.BetterNavigation.Core\Xamarin.BetterNavigation.Core.csproj" />
+    <ProjectReference Include="..\Xamarin.BetterNavigation.Forms\Xamarin.BetterNavigation.Forms.csproj" />
   </ItemGroup>
 
 </Project>

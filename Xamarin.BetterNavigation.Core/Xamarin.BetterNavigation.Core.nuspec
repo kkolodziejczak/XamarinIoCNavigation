@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Xamarin.BetterNavigation.Core</id>
+    <version>@version</version>
+    <title>Better navigation Plugin for Xamarin Forms</title>
+    <authors>Krzysztof Kołodziejczak</authors>
+    <licenseUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Core interfaces to use in MVVM library and Xamarin.BetterNavigation.Forms in Xamarin.Forms.</description>
+    <summary>Xamarin Forms plugin to navigate easily and fluently. Core interfaces to easily incorporate to MVVM library.</summary>
+    <tags>xamarin, forms, xamarin.forms, quick, easy, navigation</tags>
+  </metadata>
+
+    <files>
+
+        <!--Net Standard-->
+        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.dll" target="lib\netstandard2.0\Xamarin.BetterNavigation.Core.dll" />
+        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.xml" target="lib\netstandard2.0\Xamarin.BetterNavigation.Core.xml" />
+        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.pdb" target="lib\netstandard2.0\Xamarin.BetterNavigation.Core.pdb" />
+
+    </files>
+    
+</package>

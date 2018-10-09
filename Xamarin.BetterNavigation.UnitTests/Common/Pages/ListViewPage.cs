@@ -1,17 +1,14 @@
 ﻿using System.Threading.Tasks;
-using TestDI.Common;
 using Xamarin.Forms;
 
-namespace TestDI.Pages
+namespace Xamarin.BetterNavigation.UnitTests.Common.Pages
 {
-    public class ListViewPage : Page, IAsyncInitialization
+    public class ListViewPage : Page
     {
-        private readonly ListPageViewModel _viewModel;
         public Task Initialization { get; }
 
-        public ListViewPage(ListPageViewModel viewModel)
+        public ListViewPage()
         {
-            _viewModel = viewModel;
             Initialization = Init();
         }
 

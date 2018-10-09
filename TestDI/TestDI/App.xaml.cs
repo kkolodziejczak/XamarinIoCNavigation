@@ -4,8 +4,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
 using TestDI.Common;
-using TestDI.Navigation;
-using TestDI.Pages;
+using Xamarin.BetterNavigation.Core;
+using Xamarin.BetterNavigation.Forms;
 using Xamarin.Forms;
 
 namespace TestDI
@@ -27,20 +27,15 @@ namespace TestDI
 
             MainPage = new NavigationPage(new MainPage());
 
-            var AssembliesToImport = AppDomain.CurrentDomain.GetAssemblies()
-                .SingleOrDefault(assemblies => assemblies.GetName().Name == "TestDI"); // Add more names there.
+            var assembliesToImport = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(assemblies => assemblies.GetName().Name == "TestDI"
+                                  || assemblies.GetName().Name.Contains("Xamarin.BetterNavigation")); // Add more names there.)
 
-            InitializeIoC(AssembliesToImport);
+            InitializeIoC(assembliesToImport.ToArray());
 
             // Start Application
-            var n = MainPage.Navigation;
-
             var navigationService = ServiceLocator.Get<INavigationService>();
-            navigationService.GoToAsync(ApplicationPage.MainMenuPage);
-            MainPage.Navigation.PushModalAsync(new LoginPage(navigationService));
-            navigationService.GoToAsync(ApplicationPage.MainMenuPage);
-            navigationService.PopPageAsync();
-            n = MainPage.Navigation;
+            navigationService.GoToAsync(ApplicationPage.ListViewPage);
         }
 
         private void InitializeIoC(params Assembly[] assemblies)
@@ -71,7 +66,7 @@ namespace TestDI
                 // Register ViewModels
                 builder.RegisterAssemblyTypes(assemblies)
                     .Where(t => t.Name.EndsWith("ViewModel"))
-                    .OnActivating(async viewModel =>
+                    .OnActivated(async viewModel =>
                     {
                         if (viewModel.Instance is IAsyncInitialization asyncViewModel)
                         {

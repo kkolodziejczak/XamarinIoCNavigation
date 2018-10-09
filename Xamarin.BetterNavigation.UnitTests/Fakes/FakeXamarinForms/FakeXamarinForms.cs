@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 
-namespace TestDI.Tests.Fakes.FakeXamarinForms
+namespace Xamarin.BetterNavigation.UnitTests.Fakes.FakeXamarinForms
 {
     public class FakeXamarinForms
     {

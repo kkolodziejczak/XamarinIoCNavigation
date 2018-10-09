@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Xamarin.BetterNavigation.Core;
+using Xamarin.BetterNavigation.UnitTests.Navigation;
 
-namespace TestDI.Common
+namespace Xamarin.BetterNavigation.UnitTests
 {
     public static class NavigationServiceExtensions
     {

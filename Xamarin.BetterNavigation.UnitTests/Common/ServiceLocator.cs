@@ -4,7 +4,7 @@ using Autofac;
 using Autofac.Core;
 using Autofac.Core.Registration;
 
-namespace TestDI.Common
+namespace Xamarin.BetterNavigation.UnitTests.Common
 {
     public class ServiceLocator : IServiceLocator
     {
@@ -35,9 +35,6 @@ namespace TestDI.Common
             }
             catch (DependencyResolutionException e)
             {
-                Debug.WriteLine("~~!~~~~!~~~~!~~~~!~~~~!~~~~!~~");
-                Debug.WriteLine("Dependency error! \n" + e.Message);
-                Debug.WriteLine("~~!~~~~!~~~~!~~~~!~~~~!~~~~!~~");
                 throw;
             }
         }
@@ -59,9 +56,6 @@ namespace TestDI.Common
             }
             catch (DependencyResolutionException e)
             {
-                Debug.WriteLine("~~!~~~~!~~~~!~~~~!~~~~!~~~~!~~");
-                Debug.WriteLine("Dependency error! \n" + e.Message);
-                Debug.WriteLine("~~!~~~~!~~~~!~~~~!~~~~!~~~~!~~");
                 throw;
             }
         }

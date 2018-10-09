@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
-namespace TestDI.Tests.Fakes
+namespace Xamarin.BetterNavigation.UnitTests.Fakes
 {
     public class FakeNavigation : INavigation
     {
