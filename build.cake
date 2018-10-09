@@ -31,6 +31,7 @@ readonly bool IsOnMaster = CurrentBranchName == "master";
 readonly bool IsOnDevelop = CurrentBranchName == "develop";
 readonly bool IsOnRelease = CurrentBranchName.StartsWith("release/");
 readonly bool IsLocalBuild = BuildSystem.IsLocalBuild;
+readonly bool IsPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
 
 //////////////////////////////////////////////////////////////////////
 // TASKS
@@ -132,7 +133,7 @@ Task("TestAndCover")
 
 Task("UploadCover")
     .WithCriteria(IsOnMaster || IsOnDevelop || IsOnRelease)
-    .WithCriteria(!IsLocalBuild)
+    .WithCriteria(!IsLocalBuild && !IsPullRequest)
     .Does(() =>
     {
         CoverallsIo(CoverResultFileName, new CoverallsIoSettings()
@@ -167,7 +168,7 @@ Task("NuGetPack")
 
 Task("UploadNuGet")
     .WithCriteria(IsOnMaster || IsOnRelease)
-    .WithCriteria(!IsLocalBuild)
+    .WithCriteria(!IsLocalBuild && !IsPullRequest)
     .Does(() =>
     {
         NuGetPush(NugetFilePaths, new NuGetPushSettings()
@@ -185,7 +186,7 @@ Task("CollectArtifacts")
 
 Task("GitRelease")
     .WithCriteria(IsOnMaster || IsOnRelease)
-    .WithCriteria(!IsLocalBuild)
+    .WithCriteria(!IsLocalBuild && !IsPullRequest)
     .Does(() =>
     {
         GitReleaseManagerCreate(EnvironmentVariable("Git_Bot_Login"),
@@ -216,8 +217,7 @@ Task("Deploy")
     .IsDependentOn("UploadCover")
     .IsDependentOn("NuGetPack")
     .IsDependentOn("UploadNuGet")
-    .IsDependentOn("CollectArtifacts")
-    .IsDependentOn("GitRelease");
+    .IsDependentOn("CollectArtifacts");
 
 Task("Coveralls")
     .IsDependentOn("Clean")
