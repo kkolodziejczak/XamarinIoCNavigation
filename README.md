@@ -21,12 +21,11 @@ Concept on how to create your own navigation using IoC container in Xamarin.
 
 `Xamarin.BetterNavigation.Forms` contains implementation of navigation service that is used to navigate inside your application. 
 
-`Xamarin.BetterNavigation.Core` have `INavigationService` interface to use insiade your libary that doesn't have reference to Xamarin. This helps to keep all references to minimum and invert dependencies of navigation in code.
+`Xamarin.BetterNavigation.Core` have `INavigationService` interface to use inside your libary that doesn't have reference to Xamarin. This helps to keep all references to minimum and invert dependencies of navigation in code.
 
 ### Basic usage ###
 To use `NavigationService` you need to have Xamarin `NavigationPage` from it you can get `INavigation` property that is used to navigate through application. After that you need to create class that implements `Xamarin.BetterNavigation.Forms.IPageLocator` interface. This class converts strings to Xamarin `Page`'s. 
-### Page Locator class ###
-Sample PageLocator. You can create it as complicated as you want.
+### Page Locator ###
 ##### TestDI.Common.PageLocator.cs #####
 ```C#
 public class PageLocator : IPageLocator
@@ -69,7 +68,7 @@ public App()
 ```
 
 ### Some Improvements ###
-To keep this package universal ass possible. We use strings to navigate but they are not as easy to use as enums. There is easy fix for that. You can create _extension methods_ for all methods of `INavigationService` and use enum instead of string for all pages that You want to use.
+To keep this package universal as possible. We use strings to navigate but they are not as easy to use as enums. There is easy fix for that. You can create _extension methods_ for all methods of `INavigationService` and use enum instead of string for all pages that You want to use.
 ##### TestDI.Common.NavigationServiceExtensions.cs #####
 ```C#
     public enum ApplicationPage
