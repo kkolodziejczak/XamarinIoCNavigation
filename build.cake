@@ -48,7 +48,7 @@ Setup(context =>
     Information($"Current Branch Name: {CurrentBranchName}");
     Information($"Build Configuration: {buildConfiguration}");
     Information($"Target: {target}");
-    Information($"Current Version: {currentVersion}");
+    Information($"Current Version: {currentVersion.InformationalVersion}");
     Information($"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 });
 
