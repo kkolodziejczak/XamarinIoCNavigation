@@ -48,7 +48,7 @@ Setup(context =>
     Information($"Current Branch Name: {CurrentBranchName}");
     Information($"Build Configuration: {buildConfiguration}");
     Information($"Target: {target}");
-    Information($"Current Version: {currentVersion}");
+    Information($"Current Version: {currentVersion.InformationalVersion}");
     Information($"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 });
 
@@ -78,7 +78,7 @@ Task("Restore")
         DotNetCoreRestore(".");
     });
 
-Task("Build")
+Task("BuildTest")
     .Does(() =>
     {
         ExecuteForEachNonTestProject(projectFilePath =>
@@ -86,6 +86,7 @@ Task("Build")
             DotNetCoreBuild(projectFilePath.FullPath, new DotNetCoreBuildSettings
             {
                 Configuration = buildConfiguration,
+				ArgumentCustomization = arg => arg.AppendSwitch("/p:DebugType","=","Full"),
             });
         }, ProjectFile.csproj);
         ExecuteForEachTestProject(testProjectFilePath =>
@@ -96,6 +97,18 @@ Task("Build")
                 ArgumentCustomization = arg => arg.AppendSwitch("/p:DebugType","=","Full"),
             });
         });
+    });
+
+Task("BuildRelease")
+    .Does(() =>
+    {
+        ExecuteForEachNonTestProject(projectFilePath =>
+        {
+            DotNetCoreBuild(projectFilePath.FullPath, new DotNetCoreBuildSettings
+            {
+                Configuration = buildConfiguration,
+            });
+        }, ProjectFile.csproj);
     });
 
 Task("TestAndCover")
@@ -123,7 +136,8 @@ Task("TestAndCover")
                 MergeByHash = true,
                 OldStyle = true, // This fixes issue with dotnet core
             }
-            .WithFilter("+[Xamarin.BetterNavigation.UnitTests]Xamarin.BetterNavigation.UnitTests.Navigation.*"));
+            .WithFilter("+[Xamarin.BetterNavigation.Core]*")
+            .WithFilter("+[Xamarin.BetterNavigation.Forms]*"));
 
             // Generate Human readable coverage raport
             ReportGenerator(CoverResultFileName, $"{OutputDirectoryPath}/CoverageReport");
@@ -206,26 +220,24 @@ Task("GitRelease")
 Task("Default")
     .IsDependentOn("Clean")
     .IsDependentOn("Restore")
-    .IsDependentOn("Build")
+    .IsDependentOn("BuildTest")
     .IsDependentOn("TestAndCover");
 
 Task("Deploy")
+    .IsDependentOn("Test")
     .IsDependentOn("Clean")
     .IsDependentOn("Restore")
-    .IsDependentOn("Build")
-    .IsDependentOn("TestAndCover")
-    .IsDependentOn("UploadCover")
+    .IsDependentOn("BuildRelease")
     .IsDependentOn("NuGetPack")
     .IsDependentOn("UploadNuGet")
     .IsDependentOn("CollectArtifacts");
 
-Task("Coveralls")
+Task("Test")
     .IsDependentOn("Clean")
     .IsDependentOn("Restore")
-    .IsDependentOn("Build")
+    .IsDependentOn("BuildTest")
     .IsDependentOn("TestAndCover")
     .IsDependentOn("UploadCover");
-
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION

@@ -11,8 +11,17 @@
     <description>Core interfaces to use in MVVM library and Xamarin.BetterNavigation.Forms in Xamarin.Forms.</description>
     <summary>Xamarin Forms plugin to navigate easily and fluently. Core interfaces to easily incorporate to MVVM library.</summary>
     <tags>xamarin, forms, xamarin.forms, quick, easy, navigation</tags>
-  </metadata>
+  
+    <dependencies>
+    
+      <group>
+        <dependency id="NETStandard.Library" version="2.0.0" />
+      </group>
 
+    </dependencies>
+
+  </metadata>
+  
     <files>
 
         <!--Net Standard-->

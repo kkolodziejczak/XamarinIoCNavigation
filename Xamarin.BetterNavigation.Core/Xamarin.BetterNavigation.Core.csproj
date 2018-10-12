@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>Full</DebugType>
     <DefineConstants>DEBUG</DefineConstants>
     <OutputPath>bin\Debug</OutputPath>
     <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
