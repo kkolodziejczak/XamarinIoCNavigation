@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Xamarin.BetterNavigation.Core
 {
+    /// <summary>
+    /// <see cref="INavigationService"/> provides navigation through your application.
+    /// </summary>
     public interface INavigationService
     {
         /// <summary>
