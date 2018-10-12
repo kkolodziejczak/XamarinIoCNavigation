@@ -146,7 +146,7 @@ Task("TestAndCover")
     });
 
 Task("UploadCover")
-    .WithCriteria(IsOnMaster || IsOnDevelop || IsOnRelease)
+    .WithCriteria(IsOnMaster || IsOnDevelop)
     .WithCriteria(!IsLocalBuild && !IsPullRequest)
     .Does(() =>
     {
@@ -181,7 +181,7 @@ Task("NuGetPack")
     });
 
 Task("UploadNuGet")
-    .WithCriteria(IsOnMaster || IsOnRelease)
+    .WithCriteria(IsOnMaster)
     .WithCriteria(!IsLocalBuild && !IsPullRequest)
     .Does(() =>
     {
