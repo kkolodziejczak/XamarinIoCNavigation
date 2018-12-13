@@ -74,21 +74,21 @@ namespace Xamarin.BetterNavigation.Forms
             => PopPageAsync(1, animated);
 
         /// <summary>
-        /// Removes <paramref name="count"/> pages from Navigation Stack.
+        /// Removes <paramref name="amount"/> of pages from Navigation Stack.
         /// </summary>s
-        /// <param name="count">Number of pages to pop.</param>
+        /// <param name="amount">Number of pages to pop.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
-        public Task PopPageAsync(byte count)
-            => PopPageAsync(count, false);
+        public Task PopPageAsync(byte amount)
+            => PopPageAsync(amount, false);
 
         /// <summary>
-        /// Removes <paramref name="count"/> pages from Navigation Stack.
+        /// Removes <paramref name="amount"/> of pages from Navigation Stack.
         /// </summary>s
-        /// <param name="count">Number of pages to pop.</param>
+        /// <param name="amount">Number of pages to pop.</param>
         /// <param name="animated">Animate the passage.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
-        public Task PopPageAsync(byte count, bool animated)
-            => RemoveUnwantedPages(count, null, animated);
+        public Task PopPageAsync(byte amount, bool animated)
+            => RemoveUnwantedPages(amount, null, animated);
 
         /// <summary>
         /// Navigate to <paramref name="pageName"/> page.
@@ -133,7 +133,7 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="amount">The amount of pages to pop.</param>
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAndGoToAsync(byte amount, string pageName, params (string key, object value)[] navigationParameters)
             => PopPageAndGoToAsync(amount, pageName, false, navigationParameters);
 
@@ -144,7 +144,7 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="animated">Animate the passage.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters)
             => RemoveUnwantedPages(amount, () =>
             {
@@ -155,19 +155,19 @@ namespace Xamarin.BetterNavigation.Forms
                 InitializeNavigationParameters(navigationParameters);
             }, animated);
 
-        private Task RemoveUnwantedPages(byte count, Action actionBeforePop, bool animated)
+        private Task RemoveUnwantedPages(byte amount, Action actionBeforePop, bool animated)
         {
             var lastPageIndex = GetLastPageIndex();
-            var weWantToPopOnlyFirstPage = count == 1 && lastPageIndex == 0;
+            var weWantToPopOnlyFirstPage = amount == 1 && lastPageIndex == 0;
 
-            if (count > lastPageIndex && !weWantToPopOnlyFirstPage)
+            if (amount > lastPageIndex && !weWantToPopOnlyFirstPage)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), "You want to remove too many pages from Navigation Stack.");
+                throw new ArgumentOutOfRangeException(nameof(amount), "You want to remove too many pages from the Navigation Stack.");
             }
 
-            if (count >= 2)
+            if (amount >= 2)
             {
-                for (var i = 1; i <= count - 1; i++) // -1 because we always pop minimum once at the end
+                for (var i = 1; i <= amount - 1; i++) // -1 because we always pop minimum once at the end
                 {
                     var pageToRemove = GetPage(lastPageIndex - i);
                     _pageNavigation.RemovePage(pageToRemove);
@@ -183,7 +183,7 @@ namespace Xamarin.BetterNavigation.Forms
             => _pageNavigation.NavigationStack[index];
 
         private int GetLastPageIndex()
-            => _pageNavigation.NavigationStack.Count - 1; // -1 because we start counting from 0
+            => _pageNavigation.NavigationStack.Count - 1; // -1 because we start amounting from 0
 
         private void InitializeNavigationParameters(params (string key, object value)[] navigationParameters)
         {
