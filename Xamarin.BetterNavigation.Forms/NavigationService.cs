@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.BetterNavigation.Core;
 using Xamarin.Forms;
@@ -14,6 +15,8 @@ namespace Xamarin.BetterNavigation.Forms
         private readonly INavigation _pageNavigation;
         private readonly IPageLocator _pageLocator;
         private readonly Dictionary<string, object> _navigationParameters;
+        private readonly Action<Page> _externalActionBeforePush;
+        private readonly Action<Page> _externalActionBeforePop;
 
         /// <summary>
         /// Base Constructor
@@ -21,10 +24,29 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigation"><see cref="INavigation"/> property from your <see cref="NavigationPage"/>.</param>
         /// <param name="pageLocator"><see cref="IPageLocator"/> that you created.</param>
         public NavigationService(INavigation navigation, IPageLocator pageLocator)
+            : this(navigation, pageLocator, null, null) { }
+
+
+        /// <summary>
+        /// Constructor with actions before pop and push
+        /// </summary>
+        /// <param name="navigation"><see cref="INavigation"/> property from your <see cref="NavigationPage"/>.</param>
+        /// <param name="pageLocator"><see cref="IPageLocator"/> that you created.</param>
+        /// <param name="actionBeforePop">
+        /// Action that will be executed every time before <see cref="Page"/> will be taken from navigation stack.
+        /// Passing <see cref="Page"/> object that will be removed.
+        /// </param>
+        /// <param name="actionBeforePush">
+        /// Action that will be executed every time before <see cref="Page"/> will be pushed on top of the navigation stack.
+        /// Passing <see cref="Page"/> object that will be removed.
+        /// </param>
+        public NavigationService(INavigation navigation, IPageLocator pageLocator, Action<Page> actionBeforePop, Action<Page> actionBeforePush)
         {
             _navigationParameters = new Dictionary<string, object>();
             _pageNavigation = navigation;
             _pageLocator = pageLocator;
+            _externalActionBeforePop = actionBeforePop;
+            _externalActionBeforePush = actionBeforePush;
         }
 
         /// <summary>
@@ -58,7 +80,7 @@ namespace Xamarin.BetterNavigation.Forms
         /// </summary>
         /// <param name="animated">Animate the passage.</param>
         public Task PopPageToRootAsync(bool animated)
-            => _pageNavigation.PopToRootAsync(animated);
+            => RemoveUnwantedPages((byte) GetLastPageIndex(), null, animated);
 
         /// <summary>
         /// Removes current page from Navigation Stack.
@@ -107,7 +129,9 @@ namespace Xamarin.BetterNavigation.Forms
         public Task GoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
         {
             InitializeNavigationParameters(navigationParameters);
-            return _pageNavigation.PushAsync(_pageLocator.GetPage(pageName), animated);
+            var pageToPush = _pageLocator.GetPage(pageName);
+            _externalActionBeforePush?.Invoke(pageToPush);
+            return _pageNavigation.PushAsync(pageToPush, animated);
         }
 
         /// <summary>
@@ -150,6 +174,7 @@ namespace Xamarin.BetterNavigation.Forms
             {
                 var lastPage = GetPage(GetLastPageIndex());
                 var newPage = _pageLocator.GetPage(pageName);
+                _externalActionBeforePush?.Invoke(newPage);
                 _pageNavigation.InsertPageBefore(newPage, lastPage);
 
                 InitializeNavigationParameters(navigationParameters);
@@ -170,12 +195,13 @@ namespace Xamarin.BetterNavigation.Forms
                 for (var i = 1; i <= amount - 1; i++) // -1 because we always pop minimum once at the end
                 {
                     var pageToRemove = GetPage(lastPageIndex - i);
+                    _externalActionBeforePop?.Invoke(pageToRemove);
                     _pageNavigation.RemovePage(pageToRemove);
                 }
             }
 
             actionBeforePop?.Invoke();
-
+            _externalActionBeforePop?.Invoke(GetLastPage());
             return _pageNavigation.PopAsync(animated);
         }
 
@@ -184,6 +210,9 @@ namespace Xamarin.BetterNavigation.Forms
 
         private int GetLastPageIndex()
             => _pageNavigation.NavigationStack.Count - 1; // -1 because we start amounting from 0
+
+        private Page GetLastPage()
+            => _pageNavigation.NavigationStack.Last();
 
         private void InitializeNavigationParameters(params (string key, object value)[] navigationParameters)
         {
