@@ -70,6 +70,47 @@ namespace Xamarin.BetterNavigation.Forms
         }
 
         /// <summary>
+        /// Determines whether the <see cref="NavigationParameters{T}"/> contains the specified key.
+        /// </summary>
+        /// <param name="parameterKey">The key to locate in the <see cref="NavigationParameters{T}"/>.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="parameterKey"/> is null.</exception>
+        /// <returns>true if the <see cref="NavigationParameters{T}"/> contains an element with the specified key; otherwise, false.</returns>
+        public bool ContainsParameterKey(string parameterKey)
+            => _navigationParameters.ContainsKey(parameterKey);
+
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        /// <typeparam name="T">Type of the parameter to get.</typeparam>
+        /// <param name="parameterKey">Key passed while navigating to this page.</param>
+        /// <param name="value">
+        /// When this method returns, contains the value associated with the specified key, if the key is found;
+        /// otherwise, the default value for the type of the value parameter. This parameter is passed uninitialized.
+        /// </param>
+        /// <returns></returns>
+        /// <exception cref="InvalidCastException">Thrown when object type is not the same as requested one.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="parameterKey"/> is null.</exception>
+        public bool TryGetValue<T>(string parameterKey, out T value)
+        {
+            var result = _navigationParameters.TryGetValue(parameterKey, out var commonValue);
+
+            if (result == true)
+            {
+                if (commonValue is T returnValue)
+                {
+                    value = returnValue;
+                }
+                else
+                {
+                    throw new InvalidCastException($"{nameof(parameterKey)} is not a type of {typeof(T)}.");
+                }
+            }
+
+            value = default;
+            return result;
+        }
+
+        /// <summary>
         /// Removes all pages from Navigation Stack.
         /// </summary>
         public Task PopPageToRootAsync()

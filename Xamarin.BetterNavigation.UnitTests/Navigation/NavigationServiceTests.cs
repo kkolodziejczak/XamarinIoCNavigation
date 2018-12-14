@@ -195,6 +195,73 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         }
 
         [Test]
+        public async Task NavigationService_GoToPage_CheckIfNavigationPropertyExists_Positive()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
+
+            service.ContainsParameterKey("documentCount").Should().Be(true);
+        }
+
+        [Test]
+        public async Task NavigationService_GoToPage_CheckIfNavigationPropertyExists_Negative()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            service.ContainsParameterKey("documentCount").Should().Be(false);
+        }
+
+        [Test]
+        public void NavigationService_GoToPage_CheckIfNavigationPropertyExists_ThrowsException()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+
+            Assert.Throws<ArgumentNullException>(() => service.ContainsParameterKey(null));
+        }
+
+        [Test]
+        public async Task NavigationService_GoToPage_NavigationProperty_TryGetValue_Positive()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
+
+            var result = service.TryGetValue("documentCount", out int count);
+
+            result.Should().Be(true);
+        }
+
+        [Test]
+        public void NavigationService_GoToPage_NavigationProperty_TryGetValue_Negative()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+
+            var result = service.TryGetValue("documentCount", out int count);
+
+            result.Should().Be(false);
+        }
+
+        [Test]
+        public async Task NavigationService_GoToPage_NavigationProperty_TryGetValue_InvalidReturnType()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage, ("documentCount", 5));
+
+            Assert.Throws<InvalidCastException>(() => service.TryGetValue("documentCount", out string count));
+        }
+
+
+        [Test]
+        public void NavigationService_GoToPage_NavigationProperty_TryGetValue_InvalidKey()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+
+            Assert.Throws<ArgumentNullException>(() => service.TryGetValue(null, out string count));
+        }
+
+        [Test]
         public async Task NavigationService_PopTooManyPages()
         {
             var service = ServiceLocator.Get<INavigationService>();
@@ -212,6 +279,9 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                 () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
         }
+
+
+
 
         #region Utils
 
