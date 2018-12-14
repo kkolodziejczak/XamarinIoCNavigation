@@ -140,7 +140,7 @@ namespace Xamarin.BetterNavigation.Forms
         /// Removes <paramref name="amount"/> of pages from Navigation Stack.
         /// </summary>s
         /// <param name="amount">Number of pages to pop.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAsync(byte amount)
             => PopPageAsync(amount, false);
 
@@ -149,9 +149,40 @@ namespace Xamarin.BetterNavigation.Forms
         /// </summary>s
         /// <param name="amount">Number of pages to pop.</param>
         /// <param name="animated">Animate the passage.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAsync(byte amount, bool animated)
             => RemoveUnwantedPages(amount, null, animated);
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and navigates to <paramref name="pageName"/> <see cref="Page"/>.
+        /// </summary>
+        /// <param name="pageName">Page name to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
+        public Task PopAllPagesAndGoToAsync(string pageName, params (string key, object value)[] navigationParameters)
+            => PopAllPagesAndGoToAsync(pageName, false, navigationParameters);
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and navigates to <paramref name="pageName"/> <see cref="Page"/>.
+        /// </summary>
+        /// <param name="pageName">Page name to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
+        public Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
+            => RemoveUnwantedPages((byte)GetLastPageIndex(), () =>
+            {
+                // Remove 1st Page from the stack (root page)
+                var firstPageOnTheStack = GetPage(GetLastPageIndex()-1);
+                _externalActionBeforePop?.Invoke(firstPageOnTheStack);
+                _pageNavigation.RemovePage(firstPageOnTheStack);
+
+                var newPage = _pageLocator.GetPage(pageName);
+                _externalActionBeforePush?.Invoke(newPage);
+                _pageNavigation.InsertPageBefore(newPage, GetPage(GetLastPageIndex()));
+
+                InitializeNavigationParameters(navigationParameters);
+            }, animated);
 
         /// <summary>
         /// Navigate to <paramref name="pageName"/> page.

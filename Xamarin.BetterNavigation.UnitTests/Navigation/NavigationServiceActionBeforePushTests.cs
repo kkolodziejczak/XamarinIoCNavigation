@@ -114,6 +114,46 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             pushInvoked.Should().Be(true);
         }
 
+        [Test]
+        public async Task NavigationService_ActionExecuted_beforePush_PopAllPagesAndGoToAsync()
+        {
+            var pushInvoked = false;
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
+                null, p => { pushInvoked = true; });
+
+            await service.GoToAsync(ApplicationPage.ListViewPage);
+            await service.GoToAsync(ApplicationPage.ListViewPage);
+            await service.GoToAsync(ApplicationPage.ListViewPage);
+            await service.GoToAsync(ApplicationPage.ListViewPage);
+            // Reset status from before acting
+            pushInvoked = false;
+
+
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.LoginPage);
+
+            pushInvoked.Should().Be(true);
+        }
+
+        [Test]
+        public async Task NavigationService_ActionExecuted_beforePush_PopAllPagesAndGoToAsyncAnimated()
+        {
+            var pushInvoked = false;
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
+                null, p => { pushInvoked = true; });
+
+            await service.GoToAsync(ApplicationPage.ListViewPage);
+            await service.GoToAsync(ApplicationPage.ListViewPage);
+            await service.GoToAsync(ApplicationPage.ListViewPage);
+            await service.GoToAsync(ApplicationPage.ListViewPage);
+            // Reset status from before acting
+            pushInvoked = false;
+
+
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.LoginPage, true);
+
+            pushInvoked.Should().Be(true);
+        }
+
         private void InitializeIoC(params Assembly[] assemblies)
         {
             ServiceLocator = new ServiceLocator(builder =>

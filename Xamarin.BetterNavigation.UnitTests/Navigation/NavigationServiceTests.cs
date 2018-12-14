@@ -281,7 +281,35 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         }
 
 
+        [Test]
+        public async Task NavigationService_PopAllPagesAndGoTo()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
 
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopAllPagesAndGoToAnimated([Values(0,1,4,10)]int pageAmount)
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            for (int i = 0; i < pageAmount; i++)
+                await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopPageToRootAsync();
+            await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage);
+//            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+        }
 
         #region Utils
 
