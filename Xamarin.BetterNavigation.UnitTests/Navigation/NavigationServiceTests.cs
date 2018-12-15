@@ -10,19 +10,15 @@ using Xamarin.BetterNavigation.Core;
 using Xamarin.BetterNavigation.Forms;
 using Xamarin.BetterNavigation.UnitTests.Common;
 using Xamarin.BetterNavigation.UnitTests.Common.Pages;
-using Xamarin.BetterNavigation.UnitTests.Fakes;
 using Xamarin.BetterNavigation.UnitTests.Fakes.FakeXamarinForms;
 using Xamarin.Forms;
 
 namespace Xamarin.BetterNavigation.UnitTests.Navigation
 {
     [TestFixture]
-//    [SingleThreaded]
-    [NonParallelizable]
     public class NavigationServiceTests
     {
         public static IServiceLocator ServiceLocator { get; private set; }
-        public INavigation Navigation { get; protected set; }
 
         // create dummy item to ensure that Assembly is added
         private NavigationService _dummyInstance = new NavigationService(null, null);
@@ -40,131 +36,173 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             var testedAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => assembly.GetName().Name.Contains("Xamarin.BetterNavigation"));
 
-            Navigation = new FakeNavigation(new MainPage());
             InitializeIoC(testedAssembly.ToArray());
         }
 
-        [Test, Sequential]
-        public async Task NavigationService_PopPagesToRoot([Values(0, 1, 5, 10)]int pageAmount)
+        [Test]
+        public Task NavigationService_PopPagesToRoot([Values(0, 1, 5, 10)]int pageAmount)
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            for (var i = 0; i < pageAmount; i++)
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                for (var i = 0; i < pageAmount; i++)
+                    await service.GoToAsync(ApplicationPage.LoginPage);
+
+                await service.PopPageToRootAsync();
+
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+            });
+        }
+
+        [Test]
+        public Task NavigationService_PopPagesToRootAnimated([Values(0, 1, 5, 10)]int pageAmount)
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                for (var i = 0; i < pageAmount; i++)
+                    await service.GoToAsync(ApplicationPage.LoginPage);
+
+                await service.PopPageToRootAsync(true);
+
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+            });
+        }
+
+        [Test]
+        public Task NavigationService_PopPage()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
                 await service.GoToAsync(ApplicationPage.LoginPage);
 
-            await service.PopPageToRootAsync();
+                await service.PopPageAsync();
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+            });
         }
 
-        [Test, Sequential]
-        public async Task NavigationService_PopPagesToRootAnimated([Values(0, 1, 5, 10)]int pageAmount)
+        [Test]
+        public Task NavigationService_PopPageAnimated()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            for (var i = 0; i < pageAmount; i++)
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
                 await service.GoToAsync(ApplicationPage.LoginPage);
 
-            await service.PopPageToRootAsync(true);
+                await service.PopPageAsync(true);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopPage()
+        public Task NavigationService_PopPage_Twice()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.SideBar);
 
-            await service.PopPageAsync();
+                await service.PopPageAsync(2);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopPageAnimated()
+        public Task NavigationService_GoTo()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
 
-            await service.PopPageAsync(true);
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+                navigation.NavigationStack.Should().HaveCount(2);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(LoginPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopPage_Twice()
+        public Task NavigationService_PopOnePageAndGoTo_withOnlyOnePageOnTheStack()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.SideBar);
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
 
-            await service.PopPageAsync(2);
+                await service.PopPageAndGoToAsync(ApplicationPage.LoginPage);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(LoginPage));
+            });
+
         }
 
         [Test]
-        public async Task NavigationService_GoTo()
+        public Task NavigationService_PopPageAndGoTo()
         {
-            var service = ServiceLocator.Get<INavigationService>();
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
 
-            await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage);
 
-            Navigation.NavigationStack.Should().HaveCount(2);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(LoginPage));
+                navigation.NavigationStack.Should().HaveCount(2);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
+            });
+
         }
 
         [Test]
-        public async Task NavigationService_PopOnePageAndGoTo_withOnlyOnePageOnTheStack()
+        public Task NavigationService_PopPageAndGoToAnimated()
         {
-            var service = ServiceLocator.Get<INavigationService>();
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
 
-            await service.PopPageAndGoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, true);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(LoginPage));
+                navigation.NavigationStack.Should().HaveCount(2);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
+            });
+
         }
 
         [Test]
-        public async Task NavigationService_PopPageAndGoTo()
+        public Task NavigationService_PopPageAndGoToPage_BackTwoPages()
         {
-            var service = ServiceLocator.Get<INavigationService>();
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = ServiceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.MainMenuPage);
 
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage);
+                await service.PopPageAndGoToAsync(2, ApplicationPage.ListViewPage);
 
-            Navigation.NavigationStack.Should().HaveCount(2);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
-        }
-
-        [Test]
-        public async Task NavigationService_PopPageAndGoToAnimated()
-        {
-            var service = ServiceLocator.Get<INavigationService>();
-
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage, true);
-
-            Navigation.NavigationStack.Should().HaveCount(2);
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
-        }
-
-        [Test]
-        public async Task NavigationService_PopPageAndGoToPage_BackTwoPages()
-        {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.MainMenuPage);
-
-            await service.PopPageAndGoToAsync(2, ApplicationPage.ListViewPage);
-
-            Navigation.NavigationStack.Should().HaveCount(2);
-            Navigation.NavigationStack.First().Should().BeOfType(typeof(MainPage));
-            Navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
+                navigation.NavigationStack.Should().HaveCount(2);
+                navigation.NavigationStack.First().Should().BeOfType(typeof(MainPage));
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(ListViewPage));
+            });
         }
 
         [Test]
@@ -283,96 +321,125 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 () => service.PopPageAndGoToAsync(2, ApplicationPage.LoginPage, ("documentCount", 5)));
         }
 
-
         [Test]
-        public async Task NavigationService_PopAllPagesAndGoTo()
+        public Task NavigationService_PopAllPagesAndGoTo()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = ServiceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
-            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+                await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopAllPagesAndGoTo_OnlyWithRootPage()
+        public Task NavigationService_PopAllPagesAndGoTo_OnlyWithRootPage()
         {
-            var service = ServiceLocator.Get<INavigationService>();
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
 
-            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+                await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopAllPagesAndGoTo_WithTwoPages()
+        public Task NavigationService_PopAllPagesAndGoTo_WithTwoPages()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
-            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+                await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopAllPagesAndGoTo_WithFivePages()
+        public Task NavigationService_PopAllPagesAndGoTo_WithFivePages()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
 
-            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+                await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopAllPagesAndGoToAnimated_OnlyWithRootPage()
+        public Task NavigationService_PopAllPagesAndGoToAnimated_OnlyWithRootPage()
         {
-            var service = ServiceLocator.Get<INavigationService>();
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
 
-            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
+                await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopAllPagesAndGoToAnimated_WithTwoPages()
+        public Task NavigationService_PopAllPagesAndGoToAnimated_WithTwoPages()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
-            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
+                await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+            });
         }
 
         [Test]
-        public async Task NavigationService_PopAllPagesAndGoToAnimated_WithFivePages()
+        public Task NavigationService_PopAllPagesAndGoToAnimated_WithFivePages()
         {
-            var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
 
-            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
-            Navigation.NavigationStack.Should().HaveCount(1);
-            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+                await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
+
+                navigation.NavigationStack.Should().HaveCount(1);
+                navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+            });
         }
 
         #region Utils
@@ -382,9 +449,9 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             ServiceLocator = new ServiceLocator(builder =>
             {
                 // Register Forms NavigationService
-                builder.RegisterInstance(Navigation)
+                builder.Register(e => new NavigationPage(e.Resolve<MainPage>()).Navigation)
                     .As<INavigation>()
-                    .SingleInstance();
+                    .InstancePerLifetimeScope();
 
                 // Register self
                 builder.Register(e => ServiceLocator)
@@ -400,7 +467,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 builder.RegisterAssemblyTypes(assemblies)
                     .Where(t => t.Name.EndsWith("Service"))
                     .AsImplementedInterfaces()
-                    .SingleInstance();
+                    .InstancePerLifetimeScope();
 
                 // Register ViewModels
                 builder.RegisterAssemblyTypes(assemblies)

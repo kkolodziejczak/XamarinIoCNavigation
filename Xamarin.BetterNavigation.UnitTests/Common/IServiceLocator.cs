@@ -7,7 +7,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Common
     {
         T Get<T>();
         object Get(Type type);
-        void BeginLifetimeScope(Action<IServiceLocator> actionToExecute);
-        Task BeginLifetimeScope(Func<IServiceLocator, Task> actionToExecute);
+        void BeginLifetimeScope(Action<IServiceLocator> scopedServiceLocator);
+        Task BeginLifetimeScopeAsync(Func<IServiceLocator, Task> scopedServiceLocator);
     }
 }

@@ -177,10 +177,6 @@ namespace Xamarin.BetterNavigation.Forms
         public Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
             => PopPageToRootAsync(animated)
                 .ContinueWith(t => PopPageAndGoToAsync(pageName, animated, navigationParameters));
-//        {
-//            await PopPageToRootAsync(animated);
-//            await PopPageAndGoToAsync(pageName, animated, navigationParameters);
-//        }
 
         /// <summary>
         /// Navigate to <paramref name="pageName"/> page.

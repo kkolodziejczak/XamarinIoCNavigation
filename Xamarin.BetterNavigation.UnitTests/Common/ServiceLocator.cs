@@ -75,23 +75,21 @@ namespace Xamarin.BetterNavigation.UnitTests.Common
             }
         }
 
-        public void BeginLifetimeScope(Action<IServiceLocator> actionToExecute)
+        public void BeginLifetimeScope(Action<IServiceLocator> scopedServiceLocator)
         {
             using (var scope = _containter.BeginLifetimeScope())
+            using (var locator = scope.Resolve<IServiceLocator>() as ServiceLocator)
             {
-                using (var locator = new ServiceLocator(scope))
-                {
-                    actionToExecute?.Invoke(locator);
-                }
+                scopedServiceLocator?.Invoke(locator);
             }
         }
 
-        public Task BeginLifetimeScope(Func<IServiceLocator, Task> actionToExecute)
+        public async Task BeginLifetimeScopeAsync(Func<IServiceLocator, Task> scopedServiceLocator)
         {
             using (var scope = _containter.BeginLifetimeScope())
+            using (var locator = scope.Resolve<IServiceLocator>() as ServiceLocator)
             {
-                var locator = scope.Resolve<IServiceLocator>();
-                return actionToExecute?.Invoke(locator);
+                await scopedServiceLocator?.Invoke(locator);
             }
         }
 

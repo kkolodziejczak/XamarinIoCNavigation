@@ -8,7 +8,6 @@ using NUnit.Framework;
 using Xamarin.BetterNavigation.Forms;
 using Xamarin.BetterNavigation.UnitTests.Common;
 using Xamarin.BetterNavigation.UnitTests.Common.Pages;
-using Xamarin.BetterNavigation.UnitTests.Fakes;
 using Xamarin.BetterNavigation.UnitTests.Fakes.FakeXamarinForms;
 using Xamarin.Forms;
 
@@ -38,7 +37,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             var testedAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => assembly.GetName().Name.Contains("Xamarin.BetterNavigation"));
 
-            Navigation = new FakeNavigation(new MainPage());
+            Navigation = new NavigationPage(new MainPage()).Navigation;
             InitializeIoC(testedAssembly.ToArray());
         }
 
