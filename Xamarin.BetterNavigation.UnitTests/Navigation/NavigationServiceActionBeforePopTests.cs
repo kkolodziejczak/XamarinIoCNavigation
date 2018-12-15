@@ -42,7 +42,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         }
 
         [Test]
-        public async Task NavigationService_ActionExecuted_beforePop_PopPageToRootAsync()
+        public async Task NavigationService_ActionExecuted_beforePop_PopPageToRootAsync_AlreadyOnTheRoot()
         {
             var popInvoked = false;
             var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
@@ -50,15 +50,73 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
 
             await service.PopPageToRootAsync();
 
-            popInvoked.Should().Be(true);
+            popInvoked.Should().Be(false);
         }
 
         [Test]
-        public async Task NavigationService_ActionExecuted_beforePop_PopPageToRootAsyncAnimated()
+        public async Task NavigationService_ActionExecuted_beforePop_PopPageToRootAsync_WithPageToPop()
         {
             var popInvoked = false;
             var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
                 p => { popInvoked = true; }, null);
+
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            
+            await service.PopPageToRootAsync();
+
+            popInvoked.Should().Be(true);
+        }
+
+        [Test]
+        public async Task NavigationService_ActionExecuted_beforePop_PopPageToRootAsync_WithTwoPagesToPop()
+        {
+            var popInvoked = false;
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
+                p => { popInvoked = true; }, null);
+
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopPageToRootAsync();
+
+            popInvoked.Should().Be(true);
+        }
+
+        [Test]
+        public async Task NavigationService_ActionExecuted_beforePop_PopPageToRootAsyncAnimated_AlreadyOnTheRoot()
+        {
+            var popInvoked = false;
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
+                p => { popInvoked = true; }, null);
+
+            await service.PopPageToRootAsync(true);
+
+            popInvoked.Should().Be(false);
+        }
+
+        [Test]
+        public async Task NavigationService_ActionExecuted_beforePop_PopPageToRootAsyncAnimated_WithPageToPop()
+        {
+            var popInvoked = false;
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
+                p => { popInvoked = true; }, null);
+
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopPageToRootAsync(true);
+
+            popInvoked.Should().Be(true);
+        }
+
+        [Test]
+        public async Task NavigationService_ActionExecuted_beforePop_PopPageToRootAsyncAnimated_WithTwoPagesToPop()
+        {
+            var popInvoked = false;
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
+                p => { popInvoked = true; }, null);
+
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageToRootAsync(true);
 

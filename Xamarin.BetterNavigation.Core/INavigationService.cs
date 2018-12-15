@@ -82,7 +82,6 @@ namespace Xamarin.BetterNavigation.Core
         /// </summary>
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         Task PopAllPagesAndGoToAsync(string pageName, params (string key, object value)[] navigationParameters);
 
         /// <summary>
@@ -91,7 +90,6 @@ namespace Xamarin.BetterNavigation.Core
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="animated">Animate the passage.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters);
 
         /// <summary>

@@ -17,6 +17,7 @@ using Xamarin.Forms;
 namespace Xamarin.BetterNavigation.UnitTests.Navigation
 {
     [TestFixture]
+//    [SingleThreaded]
     [NonParallelizable]
     public class NavigationServiceTests
     {
@@ -38,16 +39,17 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         {
             var testedAssembly = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => assembly.GetName().Name.Contains("Xamarin.BetterNavigation"));
-            
+
             Navigation = new FakeNavigation(new MainPage());
             InitializeIoC(testedAssembly.ToArray());
         }
 
-        [Test]
-        public async Task NavigationService_PopPagesToRoot()
+        [Test, Sequential]
+        public async Task NavigationService_PopPagesToRoot([Values(0, 1, 5, 10)]int pageAmount)
         {
             var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            for (var i = 0; i < pageAmount; i++)
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageToRootAsync();
 
@@ -55,11 +57,12 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             Navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
         }
 
-        [Test]
-        public async Task NavigationService_PopPagesToRootAnimated()
+        [Test, Sequential]
+        public async Task NavigationService_PopPagesToRootAnimated([Values(0, 1, 5, 10)]int pageAmount)
         {
             var service = ServiceLocator.Get<INavigationService>();
-            await service.GoToAsync(ApplicationPage.LoginPage);
+            for (var i = 0; i < pageAmount; i++)
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageToRootAsync(true);
 
@@ -297,15 +300,76 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         }
 
         [Test]
-        public async Task NavigationService_PopAllPagesAndGoToAnimated([Values(0,1,4,10)]int pageAmount)
+        public async Task NavigationService_PopAllPagesAndGoTo_OnlyWithRootPage()
         {
             var service = ServiceLocator.Get<INavigationService>();
-            for (int i = 0; i < pageAmount; i++)
-                await service.GoToAsync(ApplicationPage.LoginPage);
 
-            await service.PopPageToRootAsync();
-            await service.PopPageAndGoToAsync(ApplicationPage.ListViewPage);
-//            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopAllPagesAndGoTo_WithTwoPages()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopAllPagesAndGoTo_WithFivePages()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopAllPagesAndGoToAnimated_OnlyWithRootPage()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopAllPagesAndGoToAnimated_WithTwoPages()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
+
+            Navigation.NavigationStack.Should().HaveCount(1);
+            Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
+        }
+
+        [Test]
+        public async Task NavigationService_PopAllPagesAndGoToAnimated_WithFivePages()
+        {
+            var service = ServiceLocator.Get<INavigationService>();
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+            await service.GoToAsync(ApplicationPage.LoginPage);
+
+            await service.PopAllPagesAndGoToAsync(ApplicationPage.ListViewPage, true);
 
             Navigation.NavigationStack.Should().HaveCount(1);
             Navigation.NavigationStack.First().Should().BeOfType(typeof(ListViewPage));
