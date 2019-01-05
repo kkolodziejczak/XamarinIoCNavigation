@@ -46,7 +46,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         {
             var pushInvoked = false;
             var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
-                null, p => { pushInvoked = true; });
+                actionBeforePush: p => { pushInvoked = true; });
 
             await service.GoToAsync(ApplicationPage.LoginPage);
 

@@ -19,15 +19,6 @@ namespace Xamarin.BetterNavigation.Forms
         private readonly Action<Page> _externalActionBeforePop;
 
         /// <summary>
-        /// Base Constructor
-        /// </summary>
-        /// <param name="navigation"><see cref="INavigation"/> property from your <see cref="NavigationPage"/>.</param>
-        /// <param name="pageLocator"><see cref="IPageLocator"/> that you created.</param>
-        public NavigationService(INavigation navigation, IPageLocator pageLocator)
-            : this(navigation, pageLocator, null, null) { }
-
-
-        /// <summary>
         /// Constructor with actions before pop and push
         /// </summary>
         /// <param name="navigation"><see cref="INavigation"/> property from your <see cref="NavigationPage"/>.</param>
@@ -38,9 +29,9 @@ namespace Xamarin.BetterNavigation.Forms
         /// </param>
         /// <param name="actionBeforePush">
         /// Action that will be executed every time before <see cref="Page"/> will be pushed on top of the navigation stack.
-        /// Passing <see cref="Page"/> object that will be removed.
+        /// Passing <see cref="Page"/> object that will be added.
         /// </param>
-        public NavigationService(INavigation navigation, IPageLocator pageLocator, Action<Page> actionBeforePop, Action<Page> actionBeforePush)
+        public NavigationService(INavigation navigation, IPageLocator pageLocator, Action<Page> actionBeforePop = null, Action<Page> actionBeforePush = null)
         {
             _navigationParameters = new Dictionary<string, object>();
             _pageNavigation = navigation;
@@ -158,7 +149,10 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="animated">Animate the passage.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAsync(byte amount, bool animated)
-            => RemoveUnwantedPages(amount, null, animated);
+        {
+            CheckIfWeCanPopThatManyPages(amount);
+            return RemoveUnwantedPages(amount, null, animated);
+        }
 
         /// <summary>
         /// Removes all pages from Navigation Stack and navigates to <paramref name="pageName"/> <see cref="Page"/>.
@@ -175,8 +169,7 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="animated">Animate the passage.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         public Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
-            => PopPageToRootAsync(animated)
-                .ContinueWith(t => PopPageAndGoToAsync(pageName, animated, navigationParameters));
+            => RemoveUnwantedPages((byte)(GetLastPageIndex() + 1), () => GoTo(pageName, navigationParameters), animated);
 
         /// <summary>
         /// Navigate to <paramref name="pageName"/> page.
@@ -236,25 +229,14 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters)
-            => RemoveUnwantedPages(amount, () =>
-            {
-                var lastPage = GetPage(GetLastPageIndex());
-                var newPage = _pageLocator.GetPage(pageName);
-                _externalActionBeforePush?.Invoke(newPage);
-                _pageNavigation.InsertPageBefore(newPage, lastPage);
+        {
+            CheckIfWeCanPopThatManyPages(amount);
+            return RemoveUnwantedPages(amount, () => GoTo(pageName, navigationParameters), animated);
+        }
 
-                InitializeNavigationParameters(navigationParameters);
-            }, animated);
-
-        private Task RemoveUnwantedPages(byte amount, Action actionBeforePop, bool animated)
+        private Task RemoveUnwantedPages(byte amount, Action actionBeforeLastPop, bool animated)
         {
             var lastPageIndex = GetLastPageIndex();
-            var weWantToPopOnlyFirstPage = amount == 1 && lastPageIndex == 0;
-
-            if (amount > lastPageIndex && !weWantToPopOnlyFirstPage)
-            {
-                throw new ArgumentOutOfRangeException(nameof(amount), "You want to remove too many pages from the Navigation Stack.");
-            }
 
             if (amount >= 2)
             {
@@ -266,9 +248,30 @@ namespace Xamarin.BetterNavigation.Forms
                 }
             }
 
-            actionBeforePop?.Invoke();
+            actionBeforeLastPop?.Invoke();
             _externalActionBeforePop?.Invoke(GetLastPage());
             return _pageNavigation.PopAsync(animated);
+        }
+
+        private void CheckIfWeCanPopThatManyPages(byte amount)
+        {
+            var lastPageIndex = GetLastPageIndex();
+            var weWantToPopOnlyFirstPage = amount == 1 && lastPageIndex == 0;
+
+            if (amount > lastPageIndex && !weWantToPopOnlyFirstPage)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount), "You want to remove too many pages from the Navigation Stack.");
+            }
+        }
+
+        private void GoTo(string pageName, params (string key, object value)[] navigationParameters)
+        {
+            var lastPage = GetPage(GetLastPageIndex());
+            var newPage = _pageLocator.GetPage(pageName);
+            _externalActionBeforePush?.Invoke(newPage);
+            _pageNavigation.InsertPageBefore(newPage, lastPage);
+
+            InitializeNavigationParameters(navigationParameters);
         }
 
         private Page GetPage(int index)
