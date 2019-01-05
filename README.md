@@ -1,6 +1,10 @@
 # XamarinIoCNavigation
 Concept on how to create your own navigation using IoC container in Xamarin.
 
+## Shortcuts
+- [Basic usage](#Basic-usage)
+- [All possibilities](#All-possibilities-of-Xamarin.BetterNavigation )
+
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE)
 
 
@@ -95,7 +99,7 @@ To keep this package universal as possible. We use strings to navigate but they 
 ```
 
 
-### All possibilities of Xamarin.BetterNavigation ###
+## All possibilities of Xamarin.BetterNavigation ###
 ```C#
 namespace Xamarin.BetterNavigation.Core
 {
