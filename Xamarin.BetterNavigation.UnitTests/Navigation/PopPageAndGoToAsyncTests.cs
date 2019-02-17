@@ -143,9 +143,6 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         }
 
         [Test]
-        //TODO: remove this ignore if all test will pass.
-        [Ignore("This should work, maybe later this should be considered as a feature." +
-                "PopPageAndGoToAsync is used as PopAllPagesAndGoToAsync.")]
         public Task PopPageAndGoToAsyncPopExactNumberOfPages()
         {
             return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
@@ -164,9 +161,6 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         }
 
         [Test]
-        //TODO: remove this ignore if all test will pass.
-        [Ignore("This should work, maybe later this should be considered as a feature." +
-                "PopPageAndGoToAsync is used as PopAllPagesAndGoToAsync.")]
         public Task PopPageAndGoToAsyncPopExactNumberOfPagesAnimated()
         {
             return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
