@@ -13,10 +13,10 @@ using Xamarin.BetterNavigation.UnitTests.Common.Pages;
 using Xamarin.BetterNavigation.UnitTests.Fakes.FakeXamarinForms;
 using Xamarin.Forms;
 
-namespace Xamarin.BetterNavigation.UnitTests.Navigation
+namespace Xamarin.BetterNavigation.UnitTests.Navigation.OldTests
 {
     [TestFixture]
-    public class NavigationServiceTests
+    public class OldNavigationServiceTests
     {
         public static IServiceLocator ServiceLocator { get; private set; }
 

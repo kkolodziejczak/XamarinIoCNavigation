@@ -230,7 +230,11 @@ namespace Xamarin.BetterNavigation.Forms
         /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters)
         {
-            CheckIfWeCanPopThatManyPages(amount);
+            var pagesOnTheStack = (byte) (GetLastPageIndex() + 1); // +1 because we count starting from 0.
+            if (pagesOnTheStack != amount)
+            {
+                CheckIfWeCanPopThatManyPages(amount);
+            }
             return RemoveUnwantedPages(amount, () => GoTo(pageName, navigationParameters), animated);
         }
 
@@ -278,7 +282,7 @@ namespace Xamarin.BetterNavigation.Forms
             => _pageNavigation.NavigationStack[index];
 
         private byte GetLastPageIndex()
-            => (byte)(_pageNavigation.NavigationStack.Count - 1); // -1 because we start amounting from 0
+            => (byte)(_pageNavigation.NavigationStack.Count - 1); // -1 because we start counting from 0
 
         private Page GetLastPage()
             => _pageNavigation.NavigationStack.Last();
