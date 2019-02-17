@@ -84,11 +84,13 @@ To keep this package universal as possible. We use strings to navigate but they 
     public static class NavigationServiceExtensions
     {
         public static Task GoToAsync(this INavigationService navigationService, 
-            ApplicationPage page, bool animated, 
+            ApplicationPage page,
+            bool animated, 
             params (string key, object value)[] navigationParameters)
         {
-            return navigationService
-                    .GoToAsync(page.ToString(), animated, navigationParameters);
+            return navigationService.GoToAsync(page.ToString(),
+                animated,
+                navigationParameters);
         }
 
         ///
