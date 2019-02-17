@@ -96,7 +96,6 @@ namespace Xamarin.BetterNavigation.UnitTests.Common
         public void Dispose()
         {
             _containter?.Dispose();
-            _lifetimeScope?.Dispose();
         }
     }
 }

@@ -15,7 +15,7 @@ using Xamarin.Forms;
 namespace Xamarin.BetterNavigation.UnitTests.Navigation
 {
     [TestFixture]
-    public class NavigationService_PopPagesToRoot_PopOrder
+    public class GoToAsyncTests
     {
         public IServiceLocator ServiceLocator { get; private set; }
 
@@ -39,42 +39,67 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         }
 
         [Test]
-        public Task NavigationService_PopPagesToRoot_RootPageStays([Values(0, 1, 2, 3, 6)] int pagesToAdd)
+        public Task GoToAsyncSuccessful()
         {
             return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
             {
                 var service = serviceLocator.Get<INavigationService>();
                 var navigation = serviceLocator.Get<INavigation>();
 
-                for (var i = 0; i < pagesToAdd; i++)
-                    await service.GoToAsync(ApplicationPage.ListViewPage);
+                await service.GoToAsync(ApplicationPage.LoginPage);
 
-                await service.PopPageToRootAsync();
-
-                navigation.NavigationStack.Count.Should().Be(1);
-                navigation.NavigationStack.Last().Should().BeOfType<MainPage>();
-                navigation.NavigationStack.First().Should().BeOfType<MainPage>();
+                navigation.NavigationStack.Should().HaveCount(2);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(LoginPage));
             });
         }
 
         [Test]
-        public Task NavigationService_PopPagesToRoot_RootPageStaysAnimated([Values(0, 1, 2, 3, 6)] int pagesToAdd)
+        public Task GoToAsyncSuccessfulAnimated()
         {
             return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
             {
                 var service = serviceLocator.Get<INavigationService>();
                 var navigation = serviceLocator.Get<INavigation>();
 
-                for (var i = 0; i < pagesToAdd; i++)
-                    await service.GoToAsync(ApplicationPage.ListViewPage);
+                await service.GoToAsync(ApplicationPage.LoginPage, true);
 
-                await service.PopPageToRootAsync(true);
-
-                navigation.NavigationStack.Count.Should().Be(1);
-                navigation.NavigationStack.Last().Should().BeOfType<MainPage>();
-                navigation.NavigationStack.First().Should().BeOfType<MainPage>();
+                navigation.NavigationStack.Should().HaveCount(2);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(LoginPage));
             });
         }
+
+        [Test]
+        public Task GoToAsyncSuccessfulWithParameters()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+
+                await service.GoToAsync(ApplicationPage.LoginPage, ("SomeKey", 4));
+
+                navigation.NavigationStack.Should().HaveCount(2);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(LoginPage));
+                service.NavigationParameters<int>("SomeKey").Should().Be(4);
+            });
+        }
+
+        [Test]
+        public Task GoToAsyncSuccessfulAnimatedWithParameters()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+
+                await service.GoToAsync(ApplicationPage.LoginPage, true, ("SomeKey", 4));
+
+                navigation.NavigationStack.Should().HaveCount(2);
+                navigation.NavigationStack.Last().Should().BeOfType(typeof(LoginPage));
+                service.NavigationParameters<int>("SomeKey").Should().Be(4);
+            });
+        }
+
 
         private void InitializeIoC(params Assembly[] assemblies)
         {
