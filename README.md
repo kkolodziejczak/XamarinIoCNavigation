@@ -1,6 +1,10 @@
 # XamarinIoCNavigation
 Concept on how to create your own navigation using IoC container in Xamarin.
 
+## Shortcuts
+- [Basic usage](#Basic-usage)
+- [All possibilities](#All-possibilities-of-Xamarin.BetterNavigation )
+
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE)
 
 
@@ -32,22 +36,22 @@ public class PageLocator : IPageLocator
 {
     private readonly IServiceLocator _serviceLocator;
 
-        public static readonly Dictionary<string, Type> PageMap 
-            = new Dictionary<string, Type>
-        {
-            { ApplicationPage.LoginPage.ToString(), typeof(LoginPage) },
-            { ApplicationPage.ListViewPage.ToString(), typeof(ListViewPage) },
-        };
+    public static readonly Dictionary<string, Type> PageMap 
+        = new Dictionary<string, Type>
+    {
+        { ApplicationPage.LoginPage.ToString(), typeof(LoginPage) },
+        { ApplicationPage.ListViewPage.ToString(), typeof(ListViewPage) },
+    };
 
-        public PageLocator(IServiceLocator serviceLocator)
-        {
-            _serviceLocator = serviceLocator;
-        }
+    public PageLocator(IServiceLocator serviceLocator)
+    {
+        _serviceLocator = serviceLocator;
+    }
 
-        public Page GetPage(string pageName)
-        {
-            return (Page)_serviceLocator.Get(PageMap[pageName]);
-        }
+    public Page GetPage(string pageName)
+    {
+        return (Page)_serviceLocator.Get(PageMap[pageName]);
+    }
 }
 ```
 ### Creation of Navigation Service ###
@@ -80,11 +84,13 @@ To keep this package universal as possible. We use strings to navigate but they 
     public static class NavigationServiceExtensions
     {
         public static Task GoToAsync(this INavigationService navigationService, 
-            ApplicationPage page, bool animated, 
+            ApplicationPage page,
+            bool animated, 
             params (string key, object value)[] navigationParameters)
         {
-            return navigationService
-                    .GoToAsync(page.ToString(), animated, navigationParameters);
+            return navigationService.GoToAsync(page.ToString(),
+                animated,
+                navigationParameters);
         }
 
         ///
@@ -95,13 +101,17 @@ To keep this package universal as possible. We use strings to navigate but they 
 ```
 
 
-### All possibilities of Xamarin.BetterNavigation ###
+## All possibilities of Xamarin.BetterNavigation ###
 ```C#
 namespace Xamarin.BetterNavigation.Core
 {
     public interface INavigationService
     {
         T NavigationParameters<T>(string parameterKey);
+
+        bool ContainsParameterKey(string parameterKey);
+
+        bool TryGetValue<T>(string parameterKey, out T value);
 
         Task PopPageToRootAsync();
 
@@ -111,26 +121,38 @@ namespace Xamarin.BetterNavigation.Core
 
         Task PopPageAsync(bool animated);
 
-        Task PopPageAsync(byte count);
+        Task PopPageAsync(byte amount);
 
-        Task PopPageAsync(byte count, bool animated);
+        Task PopPageAsync(byte amount, bool animated);
+
+        Task PopAllPagesAndGoToAsync(string pageName,
+            params (string key, object value)[] navigationParameters);
+
+        Task PopAllPagesAndGoToAsync(string pageName,
+            bool animated,
+            params (string key, object value)[] navigationParameters);
 
         Task GoToAsync(string pageName, 
             params (string key, object value)[] navigationParameters);
 
-        Task GoToAsync(string pageName, bool animated, 
+        Task GoToAsync(string pageName,
+            bool animated,
             params (string key, object value)[] navigationParameters);
 
         Task PopPageAndGoToAsync(string pageName, 
             params (string key, object value)[] navigationParameters);
 
-        Task PopPageAndGoToAsync(string pageName, bool animated, 
+        Task PopPageAndGoToAsync(string pageName,
+            bool animated, 
             params (string key, object value)[] navigationParameters);
 
-        Task PopPageAndGoToAsync(byte amount, string pageName, 
+        Task PopPageAndGoToAsync(byte amount,
+            string pageName, 
             params (string key, object value)[] navigationParameters);
 
-        Task PopPageAndGoToAsync(byte amount, string pageName, bool animated,  
+        Task PopPageAndGoToAsync(byte amount,
+            string pageName,
+            bool animated,  
             params (string key, object value)[] navigationParameters);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.BetterNavigation.Core;
 using Xamarin.Forms;
@@ -14,17 +15,29 @@ namespace Xamarin.BetterNavigation.Forms
         private readonly INavigation _pageNavigation;
         private readonly IPageLocator _pageLocator;
         private readonly Dictionary<string, object> _navigationParameters;
+        private readonly Action<Page> _externalActionBeforePush;
+        private readonly Action<Page> _externalActionBeforePop;
 
         /// <summary>
-        /// Base Constructor
+        /// Constructor with actions before pop and push
         /// </summary>
         /// <param name="navigation"><see cref="INavigation"/> property from your <see cref="NavigationPage"/>.</param>
         /// <param name="pageLocator"><see cref="IPageLocator"/> that you created.</param>
-        public NavigationService(INavigation navigation, IPageLocator pageLocator)
+        /// <param name="actionBeforePop">
+        /// Action that will be executed every time before <see cref="Page"/> will be taken from navigation stack.
+        /// Passing <see cref="Page"/> object that will be removed.
+        /// </param>
+        /// <param name="actionBeforePush">
+        /// Action that will be executed every time before <see cref="Page"/> will be pushed on top of the navigation stack.
+        /// Passing <see cref="Page"/> object that will be added.
+        /// </param>
+        public NavigationService(INavigation navigation, IPageLocator pageLocator, Action<Page> actionBeforePop = null, Action<Page> actionBeforePush = null)
         {
             _navigationParameters = new Dictionary<string, object>();
             _pageNavigation = navigation;
             _pageLocator = pageLocator;
+            _externalActionBeforePop = actionBeforePop;
+            _externalActionBeforePush = actionBeforePush;
         }
 
         /// <summary>
@@ -48,6 +61,47 @@ namespace Xamarin.BetterNavigation.Forms
         }
 
         /// <summary>
+        /// Determines whether the <see cref="NavigationParameters{T}"/> contains the specified key.
+        /// </summary>
+        /// <param name="parameterKey">The key to locate in the <see cref="NavigationParameters{T}"/>.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="parameterKey"/> is null.</exception>
+        /// <returns>true if the <see cref="NavigationParameters{T}"/> contains an element with the specified key; otherwise, false.</returns>
+        public bool ContainsParameterKey(string parameterKey)
+            => _navigationParameters.ContainsKey(parameterKey);
+
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        /// <typeparam name="T">Type of the parameter to get.</typeparam>
+        /// <param name="parameterKey">Key passed while navigating to this page.</param>
+        /// <param name="value">
+        /// When this method returns, contains the value associated with the specified key, if the key is found;
+        /// otherwise, the default value for the type of the value parameter. This parameter is passed uninitialized.
+        /// </param>
+        /// <returns></returns>
+        /// <exception cref="InvalidCastException">Thrown when object type is not the same as requested one.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="parameterKey"/> is null.</exception>
+        public bool TryGetValue<T>(string parameterKey, out T value)
+        {
+            var result = _navigationParameters.TryGetValue(parameterKey, out var commonValue);
+
+            if (result == true)
+            {
+                if (commonValue is T returnValue)
+                {
+                    value = returnValue;
+                }
+                else
+                {
+                    throw new InvalidCastException($"{nameof(parameterKey)} is not a type of {typeof(T)}.");
+                }
+            }
+
+            value = default;
+            return result;
+        }
+
+        /// <summary>
         /// Removes all pages from Navigation Stack.
         /// </summary>
         public Task PopPageToRootAsync()
@@ -58,7 +112,14 @@ namespace Xamarin.BetterNavigation.Forms
         /// </summary>
         /// <param name="animated">Animate the passage.</param>
         public Task PopPageToRootAsync(bool animated)
-            => _pageNavigation.PopToRootAsync(animated);
+        {
+            var lastPageIndex = GetLastPageIndex();
+            if (lastPageIndex == 0)
+            {
+                return Task.CompletedTask;
+            }
+            return RemoveUnwantedPages(lastPageIndex, null, animated);
+        }
 
         /// <summary>
         /// Removes current page from Navigation Stack.
@@ -74,21 +135,41 @@ namespace Xamarin.BetterNavigation.Forms
             => PopPageAsync(1, animated);
 
         /// <summary>
-        /// Removes <paramref name="count"/> pages from Navigation Stack.
+        /// Removes <paramref name="amount"/> of pages from Navigation Stack.
         /// </summary>s
-        /// <param name="count">Number of pages to pop.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
-        public Task PopPageAsync(byte count)
-            => PopPageAsync(count, false);
+        /// <param name="amount">Number of pages to pop.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
+        public Task PopPageAsync(byte amount)
+            => PopPageAsync(amount, false);
 
         /// <summary>
-        /// Removes <paramref name="count"/> pages from Navigation Stack.
+        /// Removes <paramref name="amount"/> of pages from Navigation Stack.
         /// </summary>s
-        /// <param name="count">Number of pages to pop.</param>
+        /// <param name="amount">Number of pages to pop.</param>
         /// <param name="animated">Animate the passage.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
-        public Task PopPageAsync(byte count, bool animated)
-            => RemoveUnwantedPages(count, null, animated);
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
+        public Task PopPageAsync(byte amount, bool animated)
+        {
+            CheckIfWeCanPopThatManyPages(amount);
+            return RemoveUnwantedPages(amount, null, animated);
+        }
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and navigates to <paramref name="pageName"/> <see cref="Page"/>.
+        /// </summary>
+        /// <param name="pageName">Page name to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task PopAllPagesAndGoToAsync(string pageName, params (string key, object value)[] navigationParameters)
+            => PopAllPagesAndGoToAsync(pageName, false, navigationParameters);
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and navigates to <paramref name="pageName"/> <see cref="Page"/>.
+        /// </summary>
+        /// <param name="pageName">Page name to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
+            => RemoveUnwantedPages((byte)(GetLastPageIndex() + 1), () => GoTo(pageName, navigationParameters), animated);
 
         /// <summary>
         /// Navigate to <paramref name="pageName"/> page.
@@ -107,7 +188,9 @@ namespace Xamarin.BetterNavigation.Forms
         public Task GoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
         {
             InitializeNavigationParameters(navigationParameters);
-            return _pageNavigation.PushAsync(_pageLocator.GetPage(pageName), animated);
+            var pageToPush = _pageLocator.GetPage(pageName);
+            _externalActionBeforePush?.Invoke(pageToPush);
+            return _pageNavigation.PushAsync(pageToPush, animated);
         }
 
         /// <summary>
@@ -133,7 +216,7 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="amount">The amount of pages to pop.</param>
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAndGoToAsync(byte amount, string pageName, params (string key, object value)[] navigationParameters)
             => PopPageAndGoToAsync(amount, pageName, false, navigationParameters);
 
@@ -144,46 +227,65 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="animated">Animate the passage.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters)
-            => RemoveUnwantedPages(amount, () =>
+        {
+            var pagesOnTheStack = (byte) (GetLastPageIndex() + 1); // +1 because we count starting from 0.
+            if (pagesOnTheStack != amount)
             {
-                var lastPage = GetPage(GetLastPageIndex());
-                var newPage = _pageLocator.GetPage(pageName);
-                _pageNavigation.InsertPageBefore(newPage, lastPage);
+                CheckIfWeCanPopThatManyPages(amount);
+            }
+            return RemoveUnwantedPages(amount, () => GoTo(pageName, navigationParameters), animated);
+        }
 
-                InitializeNavigationParameters(navigationParameters);
-            }, animated);
-
-        private Task RemoveUnwantedPages(byte count, Action actionBeforePop, bool animated)
+        private Task RemoveUnwantedPages(byte amount, Action actionBeforeLastPop, bool animated)
         {
             var lastPageIndex = GetLastPageIndex();
-            var weWantToPopOnlyFirstPage = count == 1 && lastPageIndex == 0;
 
-            if (count > lastPageIndex && !weWantToPopOnlyFirstPage)
+            if (amount >= 2)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), "You want to remove too many pages from Navigation Stack.");
-            }
-
-            if (count >= 2)
-            {
-                for (var i = 1; i <= count - 1; i++) // -1 because we always pop minimum once at the end
+                for (var i = 1; i <= amount - 1; i++) // -1 because we always pop minimum once at the end
                 {
                     var pageToRemove = GetPage(lastPageIndex - i);
+                    _externalActionBeforePop?.Invoke(pageToRemove);
                     _pageNavigation.RemovePage(pageToRemove);
                 }
             }
 
-            actionBeforePop?.Invoke();
-
+            actionBeforeLastPop?.Invoke();
+            _externalActionBeforePop?.Invoke(GetLastPage());
             return _pageNavigation.PopAsync(animated);
+        }
+
+        private void CheckIfWeCanPopThatManyPages(byte amount)
+        {
+            var lastPageIndex = GetLastPageIndex();
+            var weWantToPopOnlyFirstPage = amount == 1 && lastPageIndex == 0;
+
+            if (amount > lastPageIndex && !weWantToPopOnlyFirstPage)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount), "You want to remove too many pages from the Navigation Stack.");
+            }
+        }
+
+        private void GoTo(string pageName, params (string key, object value)[] navigationParameters)
+        {
+            var lastPage = GetPage(GetLastPageIndex());
+            var newPage = _pageLocator.GetPage(pageName);
+            _externalActionBeforePush?.Invoke(newPage);
+            _pageNavigation.InsertPageBefore(newPage, lastPage);
+
+            InitializeNavigationParameters(navigationParameters);
         }
 
         private Page GetPage(int index)
             => _pageNavigation.NavigationStack[index];
 
-        private int GetLastPageIndex()
-            => _pageNavigation.NavigationStack.Count - 1; // -1 because we start counting from 0
+        private byte GetLastPageIndex()
+            => (byte)(_pageNavigation.NavigationStack.Count - 1); // -1 because we start counting from 0
+
+        private Page GetLastPage()
+            => _pageNavigation.NavigationStack.Last();
 
         private void InitializeNavigationParameters(params (string key, object value)[] navigationParameters)
         {

@@ -19,6 +19,28 @@ namespace Xamarin.BetterNavigation.Core
         T NavigationParameters<T>(string parameterKey);
 
         /// <summary>
+        /// Determines whether the <see cref="NavigationParameters{T}"/> contains the specified key.
+        /// </summary>
+        /// <param name="parameterKey">The key to locate in the <see cref="NavigationParameters{T}"/>.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="parameterKey"/> is null.</exception>
+        /// <returns>true if the <see cref="NavigationParameters{T}"/> contains an element with the specified key; otherwise, false.</returns>
+        bool ContainsParameterKey(string parameterKey);
+
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        /// <typeparam name="T">Type of the parameter to get.</typeparam>
+        /// <param name="parameterKey">Key passed while navigating to this page.</param>
+        /// <param name="value">
+        /// When this method returns, contains the value associated with the specified key, if the key is found;
+        /// otherwise, the default value for the type of the value parameter. This parameter is passed uninitialized.
+        /// </param>
+        /// <returns></returns>
+        /// <exception cref="InvalidCastException">Thrown when object type is not the same as requested one.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="parameterKey"/> is null.</exception>
+        bool TryGetValue<T>(string parameterKey, out T value);
+
+        /// <summary>
         /// Removes all pages from Navigation Stack.
         /// </summary>
         Task PopPageToRootAsync();
@@ -41,19 +63,34 @@ namespace Xamarin.BetterNavigation.Core
         Task PopPageAsync(bool animated);
 
         /// <summary>
-        /// Removes <paramref name="count"/> pages from Navigation Stack.
+        /// Removes <paramref name="amount"/> of pages from Navigation Stack.
         /// </summary>s
-        /// <param name="count">Number of pages to pop.</param>
+        /// <param name="amount">Number of pages to pop.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
-        Task PopPageAsync(byte count);
+        Task PopPageAsync(byte amount);
 
         /// <summary>
-        /// Removes <paramref name="count"/> pages from Navigation Stack.
+        /// Removes <paramref name="amount"/> of pages from Navigation Stack.
         /// </summary>s
-        /// <param name="count">Number of pages to pop.</param>
+        /// <param name="amount">Number of pages to pop.</param>
         /// <param name="animated">Animate the passage.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
-        Task PopPageAsync(byte count, bool animated);
+        Task PopPageAsync(byte amount, bool animated);
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and navigates to <paramref name="pageName"/> page.
+        /// </summary>
+        /// <param name="pageName">Page name to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        Task PopAllPagesAndGoToAsync(string pageName, params (string key, object value)[] navigationParameters);
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and navigates to <paramref name="pageName"/> page.
+        /// </summary>
+        /// <param name="pageName">Page name to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters);
 
         /// <summary>
         /// Navigate to <paramref name="pageName"/> page.
@@ -91,7 +128,7 @@ namespace Xamarin.BetterNavigation.Core
         /// <param name="amount">The amount of pages to pop.</param>
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="amount"/> is too big </exception>
         Task PopPageAndGoToAsync(byte amount, string pageName, params (string key, object value)[] navigationParameters);
 
         /// <summary>
@@ -101,7 +138,7 @@ namespace Xamarin.BetterNavigation.Core
         /// <param name="pageName">Page name to navigate to.</param>
         /// <param name="animated">Animate the passage.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="amount"/> is too big </exception>
         Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters);
 
     }
