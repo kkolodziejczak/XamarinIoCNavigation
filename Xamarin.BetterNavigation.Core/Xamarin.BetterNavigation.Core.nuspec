@@ -4,9 +4,10 @@
     <id>Xamarin.BetterNavigation.Core</id>
     <version>@version</version>
     <title>Better navigation Plugin for Xamarin Forms</title>
-    <authors>Krzysztof Kołodziejczak</authors>
+    <authors>Krzysztof Kolodziejczak</authors>
     <licenseUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation</projectUrl>
+	<releaseNotes>https://github.com/kkolodziejczak/XamarinIoCNavigation/releases</releaseNotes>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Core interfaces to use in MVVM library and Xamarin.BetterNavigation.Forms in Xamarin.Forms.</description>
     <summary>Xamarin Forms plugin to navigate easily and fluently. Core interfaces to easily incorporate to MVVM library.</summary>
