@@ -115,6 +115,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 try
                 {
                     await service.PopPageAndGoToAsync(5, ApplicationPage.LoginPage);
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
@@ -134,6 +135,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 try
                 {
                     await service.PopPageAndGoToAsync(5, ApplicationPage.LoginPage, true);
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {

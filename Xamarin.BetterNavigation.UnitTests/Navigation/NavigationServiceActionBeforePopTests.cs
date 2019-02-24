@@ -128,6 +128,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             var popInvoked = false;
             var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
                 p => { popInvoked = true; }, null);
+            await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageAsync();
 
@@ -140,6 +141,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             var popInvoked = false;
             var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
                 p => { popInvoked = true; }, null);
+            await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageAsync(true);
 
@@ -152,6 +154,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             var popInvoked = false;
             var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
                 p => { popInvoked = true; }, null);
+            await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageAsync(1);
 
@@ -164,6 +167,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             var popInvoked = false;
             var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(),
                 p => { popInvoked = true; }, null);
+            await service.GoToAsync(ApplicationPage.LoginPage);
 
             await service.PopPageAsync(1, true);
 

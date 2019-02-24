@@ -80,10 +80,16 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
 
                 navigation.NavigationStack.Should().HaveCount(1);
 
-                await service.PopPageAsync();
-
-                navigation.NavigationStack.Should().HaveCount(1);
-                navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+                try
+                {
+                    await service.PopPageAsync();
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    e.Should().BeOfType<ArgumentOutOfRangeException>()
+                        .Which.Message.Should().Contain("You want to remove too many pages from the Navigation Stack.");
+                }
             });
         }
 
@@ -97,10 +103,16 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
 
                 navigation.NavigationStack.Should().HaveCount(1);
 
-                await service.PopPageAsync(true);
-
-                navigation.NavigationStack.Should().HaveCount(1);
-                navigation.NavigationStack.Last().Should().BeOfType(typeof(MainPage));
+                try
+                {
+                    await service.PopPageAsync(true);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    e.Should().BeOfType<ArgumentOutOfRangeException>()
+                        .Which.Message.Should().Contain("You want to remove too many pages from the Navigation Stack.");
+                }
             });
         }
 
@@ -170,10 +182,31 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 try
                 {
                     await service.PopPageAsync(2);
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
                     e.Should().BeOfType<ArgumentOutOfRangeException>();
+                }
+            });
+        }
+
+        [Test]
+        public Task PopPageAsyncPopping0PagesThrowsException()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+
+                try
+                {
+                    await service.PopPageAsync(0);
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    e.Should().BeOfType<ArgumentOutOfRangeException>()
+                        .Which.Message.Should().Contain("You want to remove 0 pages from the Navigation Stack.");
                 }
             });
         }
