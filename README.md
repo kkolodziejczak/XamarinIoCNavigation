@@ -3,7 +3,7 @@ Concept on how to create your own navigation using IoC container in Xamarin.
 
 ## Shortcuts
 - [Basic usage](#Basic-usage)
-- [All possibilities](#All-possibilities-of-Xamarin.BetterNavigation )
+- [All possibilities](#all-possibilities-of-xamarinbetternavigation)
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE)
 
