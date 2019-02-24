@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
 using FluentAssertions;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using Xamarin.BetterNavigation.Core;
 using Xamarin.BetterNavigation.Forms;
 using Xamarin.BetterNavigation.UnitTests.Common;
@@ -15,7 +17,7 @@ using Xamarin.Forms;
 namespace Xamarin.BetterNavigation.UnitTests.Navigation
 {
     [TestFixture]
-    public class ContainsParameterKeyTests
+    public class NavigationParameters
     {
         public IServiceLocator ServiceLocator { get; private set; }
 
@@ -39,48 +41,42 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
         }
 
         [Test]
-        public Task ContainsParameterKeySuccessful()
+        public Task NavigationParametersUserAsksParameterWithWrongType()
         {
             return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
             {
                 var service = serviceLocator.Get<INavigationService>();
-
-                await service.GoToAsync(ApplicationPage.LoginPage, ("key", "value"));
-
-                service.ContainsParameterKey("key").Should().BeTrue();
-            });
-        }
-
-        [Test]
-        public Task ContainsParameterKeyUnsuccessful()
-        {
-            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
-            {
-                var service = serviceLocator.Get<INavigationService>();
-
-                await service.GoToAsync(ApplicationPage.LoginPage, ("key2", "value"));
-
-                service.ContainsParameterKey("key").Should().BeFalse();
-            });
-        }
-
-        [Test]
-        public Task ContainsParameterKeyUnsuccessfulEmptyString()
-        {
-            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
-            {
-                var service = serviceLocator.Get<INavigationService>();
-
-                await service.GoToAsync(ApplicationPage.LoginPage, ("key", "value"));
-
+                await service.GoToAsync(ApplicationPage.LoginPage, true, ("SomeKey", 4));
                 try
                 {
-                    service.ContainsParameterKey(null);
+                    service.NavigationParameters<string>("SomeKey");
                     Assert.Fail();
                 }
                 catch (Exception e)
                 {
-                    e.Should().BeOfType<ArgumentNullException>();
+                    e.Should().BeOfType<InvalidCastException>()
+                        .Which.Message.Should().Contain($"parameterKey is not a type of {typeof(string)}.");
+                }
+            });
+        }
+
+        [Test]
+        public Task NavigationParametersUserAsksParameterWithWrongKey()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                await service.GoToAsync(ApplicationPage.LoginPage, true, ("SomeKey", 4));
+
+                try
+                {
+                    service.NavigationParameters<string>("SomeKey2");
+                    Assert.Fail();
+                }
+                catch (Exception e)
+                {
+                    e.Should().BeOfType<KeyNotFoundException>()
+                        .Which.Message.Should().Contain("parameterKey was not found in NavigationParameters");
                 }
             });
         }

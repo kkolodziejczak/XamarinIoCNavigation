@@ -83,9 +83,9 @@ namespace Xamarin.BetterNavigation.Forms
         /// <exception cref="ArgumentNullException"><paramref name="parameterKey"/> is null.</exception>
         public bool TryGetValue<T>(string parameterKey, out T value)
         {
-            var result = _navigationParameters.TryGetValue(parameterKey, out var commonValue);
+            var navigationParametersContainsKey = _navigationParameters.TryGetValue(parameterKey, out var commonValue);
 
-            if (result == true)
+            if (navigationParametersContainsKey)
             {
                 if (commonValue is T returnValue)
                 {
@@ -96,9 +96,12 @@ namespace Xamarin.BetterNavigation.Forms
                     throw new InvalidCastException($"{nameof(parameterKey)} is not a type of {typeof(T)}.");
                 }
             }
+            else
+            {
+                value = default;
+            }
 
-            value = default;
-            return result;
+            return navigationParametersContainsKey;
         }
 
         /// <summary>
@@ -259,10 +262,12 @@ namespace Xamarin.BetterNavigation.Forms
 
         private void CheckIfWeCanPopThatManyPages(byte amount)
         {
-            var lastPageIndex = GetLastPageIndex();
-            var weWantToPopOnlyFirstPage = amount == 1 && lastPageIndex == 0;
+            if (amount == 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount), "You want to remove 0 pages from the Navigation Stack.");
 
-            if (amount > lastPageIndex && !weWantToPopOnlyFirstPage)
+            }
+            if (amount > GetLastPageIndex())
             {
                 throw new ArgumentOutOfRangeException(nameof(amount), "You want to remove too many pages from the Navigation Stack.");
             }
