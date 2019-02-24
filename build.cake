@@ -1,11 +1,10 @@
-#addin Cake.Coveralls
-#addin nuget:?package=Cake.Git
-#tool "nuget:?package=OpenCover"
-#tool "nuget:?package=GitVersion.CommandLine&prerelease"
-#tool "nuget:?package=gitreleasemanager"
-#tool "nuget:?package=ReportGenerator"
-#tool "nuget:?package=ReportUnit"
-#tool coveralls.io
+#addin nuget:?package=Cake.Coveralls&version=0.9.0
+#addin nuget:?package=Cake.Git&version=0.19.0
+#tool nuget:?package=OpenCover&version=4.7.922
+#tool nuget:?package=GitVersion.CommandLine&version=5.0.0-beta1-72
+#tool nuget:?package=ReportGenerator&version=4.0.13.1
+#tool nuget:?package=ReportUnit&version=1.5.0-beta1
+#tool nuget:?package=coveralls.io&version=1.4.2
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
@@ -39,7 +38,6 @@ readonly bool IsPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
 
 Setup(context =>
 {
-    Information($"Debug information:");
     Information($"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     Information($"Is Local Build: {IsLocalBuild}");
     Information($"Is On Release: {IsOnRelease}");
@@ -126,6 +124,8 @@ Task("TestAndCover")
                             Logger = "trx",
                             ResultsDirectory = OutputDirectoryPath,
                         });
+
+                    MutationTests(System.IO.Path.GetDirectoryName(testProjectFilePath.FullPath));
                 });
             },
             new FilePath(CoverResultFileName),
@@ -137,12 +137,13 @@ Task("TestAndCover")
                 OldStyle = true, // This fixes issue with dotnet core
             }
             .WithFilter("+[Xamarin.BetterNavigation.Core]*")
-            .WithFilter("+[Xamarin.BetterNavigation.Forms]*"));
-
-            // Generate Human readable coverage raport
-            ReportGenerator(CoverResultFileName, $"{OutputDirectoryPath}/CoverageReport");
-            ReportUnit(OutputDirectoryPath, $"{OutputDirectoryPath}/TestReport", new ReportUnitSettings());
-            DeleteFiles($"{OutputDirectoryPath}/*.trx");
+            .WithFilter("+[Xamarin.BetterNavigation.Forms]*")
+		);
+        
+		// Generate Human readable coverage raport
+		ReportGenerator(CoverResultFileName, $"{OutputDirectoryPath}/CoverageReport");
+		ReportUnit(OutputDirectoryPath, $"{OutputDirectoryPath}/TestReport", new ReportUnitSettings());
+		DeleteFiles($"{OutputDirectoryPath}/*.trx");
     });
 
 Task("UploadCover")
@@ -196,21 +197,6 @@ Task("CollectArtifacts")
     .Does(() =>
     {
         Zip(OutputDirectoryPath, ArtifactFileName);
-    });
-
-Task("GitRelease")
-    .WithCriteria(IsOnMaster || IsOnRelease)
-    .WithCriteria(!IsLocalBuild && !IsPullRequest)
-    .Does(() =>
-    {
-        GitReleaseManagerCreate(EnvironmentVariable("Git_Bot_Login"),
-                                EnvironmentVariable("Git_Bot_Password"),
-                                "kkolodziejczak",
-                                "https://github.com/kkolodziejczak/XamarinIoCNavigation",
-                                new GitReleaseManagerCreateSettings()
-                                {
-                                    Assets = string.Join(",", NugetFilePaths.Append($"./{ArtifactFileName}")),
-                                });
     });
 
 //////////////////////////////////////////////////////////////////////
@@ -279,4 +265,27 @@ RunTarget(target);
     {
         csproj,
         nuspec,
+    }
+
+    private void MutationTests(DirectoryPath testDirectoryPath)
+    {
+        var settings = new ProcessSettings()
+        {
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
+            WorkingDirectory = testDirectoryPath,
+            Arguments = new ProcessArgumentBuilder()
+                .Append("stryker")
+                .AppendSwitch("--threshold-high", "100")
+                .AppendSwitch("--threshold-low", "99")
+                .AppendSwitch("--threshold-break", "98")
+        };
+        using (var process = StartAndReturnProcess("dotnet", settings))
+        {
+            process.WaitForExit();
+            if(process.GetExitCode() != 0)
+            {
+                throw new Exception("Mutation tests not passed");
+            }
+        }
     }

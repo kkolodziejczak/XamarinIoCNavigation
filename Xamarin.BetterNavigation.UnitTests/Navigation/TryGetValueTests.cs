@@ -63,10 +63,12 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 try
                 {
                     service.TryGetValue("key", out string s);
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {
-                    e.Should().BeOfType<InvalidCastException>();
+                    e.Should().BeOfType<InvalidCastException>()
+                        .Which.Message.Should().Contain($"parameterKey is not a type of {typeof(string)}.");
                 }
             });
         }
@@ -79,10 +81,10 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 var service = serviceLocator.Get<INavigationService>();
 
                 await service.GoToAsync(ApplicationPage.LoginPage, ("key", 123));
-
                 try
                 {
                     service.TryGetValue(null, out int s);
+                    Assert.Fail();
                 }
                 catch (Exception e)
                 {

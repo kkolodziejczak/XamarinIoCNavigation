@@ -11,7 +11,7 @@ coverage-hits.txt
 OpenCover.xml
 [Aa]rtifacts/
 [Aa]rtifacts.*
-
+StrykerOutput/
 
 # User-specific files
 *.suo
