@@ -257,7 +257,10 @@ namespace Xamarin.BetterNavigation.Forms
         {
             InitializeNavigationParameters(navigationParameters);
             var pageToPush = _pageLocator.GetPage(pageName);
-            await _pushStrategy?.BeforePushAsync(pageToPush);
+            if(_pushStrategy != null)
+            {
+                await _pushStrategy.BeforePushAsync(pageToPush);
+            }
             _externalActionBeforePush?.Invoke(pageToPush);
             await _pageNavigation.PushAsync(pageToPush, animated);
         }
@@ -316,15 +319,24 @@ namespace Xamarin.BetterNavigation.Forms
                 for (var i = 1; i <= amount - 1; i++) // -1 because we always pop minimum once at the end
                 {
                     var pageToRemove = GetPage(lastPageIndex - i);
-                    await _popStrategy?.BeforePopAsync(pageToRemove);
+                    if (_popStrategy != null)
+                    {
+                        await _popStrategy.BeforePopAsync(pageToRemove);
+                    }
                     _externalActionBeforePop?.Invoke(pageToRemove);
                     _pageNavigation.RemovePage(pageToRemove);
                 }
             }
 
-            await actionBeforeLastPop?.Invoke();
+            if(actionBeforeLastPop != null)
+            {
+                await actionBeforeLastPop.Invoke();
+            }
             var lastPage = GetLastPage();
-            await _popStrategy?.BeforePopAsync(lastPage);
+            if (_popStrategy != null)
+            {
+                await _popStrategy.BeforePopAsync(lastPage);
+            }
             _externalActionBeforePop?.Invoke(lastPage);
             await _pageNavigation.PopAsync(animated);
         }
@@ -346,7 +358,10 @@ namespace Xamarin.BetterNavigation.Forms
         {
             var lastPage = GetPage(GetLastPageIndex());
             var newPage = _pageLocator.GetPage(pageName);
-            await _pushStrategy?.BeforePushAsync(newPage);
+            if (_pushStrategy != null)
+            {
+                await _pushStrategy.BeforePushAsync(newPage);
+            }
             _externalActionBeforePush?.Invoke(newPage);
             _pageNavigation.InsertPageBefore(newPage, lastPage);
 
