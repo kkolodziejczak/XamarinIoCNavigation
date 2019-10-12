@@ -27,5 +27,18 @@ namespace TestDI.Common
         {
             return (Page)_serviceLocator.Get(PageMap[pageName]);
         }
+
+        public string GetPage(Page page)
+        {
+            foreach (var registeredPage in PageMap)
+            {
+                if (page.GetType().IsInstanceOfType(registeredPage.Value))
+                {
+                    return registeredPage.Key;
+                }
+            }
+
+            return default;
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xamarin.BetterNavigation.Forms;
 using Xamarin.BetterNavigation.UnitTests.Common.Pages;
 using Xamarin.BetterNavigation.UnitTests.Navigation;
@@ -16,7 +17,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Common
             { ApplicationPage.MainMenuPage.ToString(), typeof(MainPage) },
             { ApplicationPage.SideBar.ToString(), typeof(StartPage) },
             { ApplicationPage.LoginPage.ToString(), typeof(LoginPage) },
-            { ApplicationPage.ListViewPage.ToString(), typeof(ListViewPage) },
+            { ApplicationPage.ListViewPage.ToString(), typeof(ListViewPage) }
         };
 
         public PageLocator(IServiceLocator serviceLocator)
@@ -27,6 +28,21 @@ namespace Xamarin.BetterNavigation.UnitTests.Common
         public Page GetPage(string pageName)
         {
             return (Page)_serviceLocator.Get(PageMap[pageName]);
+        }
+
+        public string GetPage(Page page)
+        {
+            var type = page.GetType();
+
+            foreach (var (pageKey, pageType) in PageMap)
+            {
+                if(type == pageType)
+                {
+                    return pageKey;
+                }
+            }
+
+            return default;
         }
     }
 }
