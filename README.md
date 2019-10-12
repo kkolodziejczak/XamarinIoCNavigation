@@ -52,6 +52,19 @@ public class PageLocator : IPageLocator
     {
         return (Page)_serviceLocator.Get(PageMap[pageName]);
     }
+
+    public string GetPageName(Page page)
+    {
+        foreach (var registeredPage in PageMap)
+        {
+            if (page.GetType().IsInstanceOfType(registeredPage.Value))
+            {
+                return registeredPage.Key;
+            }
+        }
+
+        return default;
+    }    
 }
 ```
 ### Creation of Navigation Service ###
