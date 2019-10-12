@@ -3,7 +3,7 @@ Concept on how to create your own navigation using IoC container in Xamarin.
 
 ## Shortcuts
 - [Basic usage](#Basic-usage)
-- [All possibilities](#All-possibilities-of-Xamarin.BetterNavigation )
+- [All possibilities](#all-possibilities-of-xamarinbetternavigation)
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE)
 
@@ -25,7 +25,7 @@ Concept on how to create your own navigation using IoC container in Xamarin.
 
 `Xamarin.BetterNavigation.Forms` contains implementation of navigation service that is used to navigate inside your application. 
 
-`Xamarin.BetterNavigation.Core` have `INavigationService` interface to use inside your libary that doesn't have reference to Xamarin. This helps to keep all references to minimum and invert dependencies of navigation in code.
+`Xamarin.BetterNavigation.Core` have `INavigationService` interface to use inside your library that doesn't have reference to Xamarin. This helps to keep all references to minimum and invert dependencies of navigation in code.
 
 ### Basic usage ###
 To use `NavigationService` you need to have Xamarin `NavigationPage` from it you can get `INavigation` property that is used to navigate through application. After that you need to create class that implements `Xamarin.BetterNavigation.Forms.IPageLocator` interface. This class converts strings to Xamarin `Page`'s. 
@@ -52,6 +52,19 @@ public class PageLocator : IPageLocator
     {
         return (Page)_serviceLocator.Get(PageMap[pageName]);
     }
+
+    public string GetPageName(Page page)
+    {
+        foreach (var registeredPage in PageMap)
+        {
+            if (page.GetType().IsInstanceOfType(registeredPage.Value))
+            {
+                return registeredPage.Key;
+            }
+        }
+
+        return default;
+    }    
 }
 ```
 ### Creation of Navigation Service ###
@@ -71,8 +84,52 @@ public App()
 }
 ```
 
+### Strategies for Push and Pop ###
+Since version 1.2.0 You can pass `IPopStrategy`, and `IPushStrategy` to the Constructor. Strategies will be used before page is pushed to/popped from the navigation stack.
+By default NavigationService uses `DoNothingStrategy`.
+
+```C#
+namespace Xamarin.BetterNavigation.Forms
+{
+    public interface IPopStrategy
+    {
+        Task BeforePopAsync(Page pageToPop);
+    }
+
+    public interface IPushStrategy
+    {
+        Task BeforePushAsync(Page pageToPush);
+    }
+}
+```
+### Pop strategy example ###
+```C#
+
+public class DisposePageStrategy : IPopStrategy
+{
+    public async Task BeforePopAsync(Page pageToPop)
+    {
+        if (pageToPop is IDisposable disposablePage)
+        {
+            disposablePage.Dispose();
+        }
+    }
+}
+
+public App()
+{
+    InitializeComponent();
+
+    MainPage = new NavigationPage(new MainPage());
+
+    var service = 
+        new NavigationService(MainPage.Navigation, new PageLocator(ServiceLocator), new DisposePageStrategy());
+
+    service.GoToAsync("SomePage");
+}
+```
 ### Some Improvements ###
-To keep this package universal as possible. We use strings to navigate but they are not as easy to use as enums. There is easy fix for that. You can create _extension methods_ for all methods of `INavigationService` and use enum instead of string for all pages that You want to use.
+To keep this package universal as possible. We use strings to navigate but they are not as easy to use as enums. There is easy fix for that. You can create _extension methods_ for all methods of `INavigationService` and use enum instead of string for all pages that You want to use. All extension methods are created and ready to being copied in [this file](TestDI/TestDI/Common/NavigationServiceExtensions.cs).
 ##### TestDI.Common.NavigationServiceExtensions.cs #####
 ```C#
     public enum ApplicationPage
@@ -107,6 +164,10 @@ namespace Xamarin.BetterNavigation.Core
 {
     public interface INavigationService
     {
+        CancellationToken CancellationToken { get; }
+
+        string PeekPage();
+
         T NavigationParameters<T>(string parameterKey);
 
         bool ContainsParameterKey(string parameterKey);

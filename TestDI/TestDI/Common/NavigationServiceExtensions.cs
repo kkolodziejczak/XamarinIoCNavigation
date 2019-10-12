@@ -36,5 +36,15 @@ namespace TestDI.Common
             return navigationService.PopPageAndGoToAsync(numberOfPagesToPop, page.ToString(), animated, navigationParameters);
         }
 
+        public static Task PopAllPagesAndGoToAsync(this INavigationService navigationService, ApplicationPage page, params (string key, object value)[] navigationParameters)
+        {
+            return navigationService.PopAllPagesAndGoToAsync(page.ToString(), navigationParameters);
+        }
+
+        public static Task PopAllPagesAndGoToAsync(this INavigationService navigationService, ApplicationPage page, bool animated, params (string key, object value)[] navigationParameters)
+        {
+            return navigationService.PopAllPagesAndGoToAsync(page.ToString(), animated, navigationParameters);
+        }
+
     }
 }

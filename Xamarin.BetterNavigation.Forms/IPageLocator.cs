@@ -14,5 +14,11 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="pageName">Name of the page to return.</param>
         /// <returns></returns>
         Page GetPage(string pageName);
+
+        /// <summary>
+        /// Peeks navigation stack
+        /// </summary>
+        /// <returns></returns>
+        string GetPageName(Page page);
     }
 }

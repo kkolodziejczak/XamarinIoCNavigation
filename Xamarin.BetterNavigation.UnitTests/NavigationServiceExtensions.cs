@@ -42,6 +42,5 @@ namespace Xamarin.BetterNavigation.UnitTests
 
         public static Task PopAllPagesAndGoToAsync(this INavigationService navigationService, ApplicationPage page, bool animated, params (string key, object value)[] navigationParameters)
             => navigationService.PopAllPagesAndGoToAsync(page.ToString(), animated, navigationParameters);
-
     }
 }

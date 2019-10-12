@@ -4,9 +4,10 @@
     <id>Xamarin.BetterNavigation.Forms</id>
     <version>@version</version>
     <title>Better navigation Plugin for Xamarin Forms</title>
-    <authors>Krzysztof Kolodziejczak</authors>
+    <authors>Krzysztof Kołodziejczak</authors>
     <licenseUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation</projectUrl>
+    <releaseNotes>https://github.com/kkolodziejczak/XamarinIoCNavigation/releases</releaseNotes>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
     Xamarin.BetterNavigation.Forms contains implementation of Navigation service providing better navigation through application.
