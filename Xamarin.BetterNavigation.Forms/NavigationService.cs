@@ -26,10 +26,8 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigation"><see cref="INavigation"/> property from your <see cref="NavigationPage"/>.</param>
         /// <param name="pageLocator"><see cref="IPageLocator"/> that you created.</param>
         public NavigationService(INavigation navigation, IPageLocator pageLocator)
+            : this(navigation, pageLocator, new DoNothingStrategy(), new DoNothingStrategy())
         {
-            _navigationParameters = new Dictionary<string, object>();
-            _pageNavigation = navigation;
-            _pageLocator = pageLocator;
         }
 
         /// <summary>
@@ -39,25 +37,19 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="pageLocator"><see cref="IPageLocator"/> that you created.</param>
         /// <param name="beforePopStrategy"><see cref="IPopStrategy"/> that will be invoked before page is removed from the navigation stack.</param>
         public NavigationService(INavigation navigation, IPageLocator pageLocator, IPopStrategy beforePopStrategy)
+            : this(navigation, pageLocator, beforePopStrategy, new DoNothingStrategy())
         {
-            _navigationParameters = new Dictionary<string, object>();
-            _pageNavigation = navigation;
-            _pageLocator = pageLocator;
-            _popStrategy = beforePopStrategy;
         }
 
         /// <summary>
-        /// Constructor with strategy for popping
+        /// Constructor with strategy for pushing
         /// </summary>
         /// <param name="navigation"><see cref="INavigation"/> property from your <see cref="NavigationPage"/>.</param>
         /// <param name="pageLocator"><see cref="IPageLocator"/> that you created.</param>
         /// <param name="beforePushStrategy"><see cref="IPushStrategy"/> that will be invoked before page is pushed to the navigation stack.</param>
         public NavigationService(INavigation navigation, IPageLocator pageLocator, IPushStrategy beforePushStrategy)
+            : this(navigation, pageLocator, new DoNothingStrategy(), beforePushStrategy)
         {
-            _navigationParameters = new Dictionary<string, object>();
-            _pageNavigation = navigation;
-            _pageLocator = pageLocator;
-            _pushStrategy= beforePushStrategy;
         }
 
         /// <summary>
