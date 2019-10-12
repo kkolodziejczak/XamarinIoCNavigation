@@ -3,7 +3,7 @@
 #tool nuget:?package=OpenCover&version=4.7.922
 #tool nuget:?package=GitVersion.CommandLine&version=5.0.1
 #tool nuget:?package=ReportGenerator&version=4.0.13.1
-#tool nuget:?package=ReportUnit&version=1.5.0-beta1
+#tool nuget:?package=ReportUnit
 #tool nuget:?package=coveralls.io&version=1.4.2
 
 //////////////////////////////////////////////////////////////////////
