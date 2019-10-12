@@ -16,6 +16,12 @@ namespace Xamarin.BetterNavigation.Core
         CancellationToken CancellationToken { get; }
 
         /// <summary>
+        /// Peeks page name from navigation stack
+        /// </summary>
+        /// <returns>Top's page name used for navigation.</returns>
+        string PeekPageName();
+
+        /// <summary>
         /// Navigation parameters passed while navigating to this page.
         /// </summary>
         /// <typeparam name="T">Type of the parameter to get.</typeparam>
@@ -147,10 +153,5 @@ namespace Xamarin.BetterNavigation.Core
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="amount"/> is too big </exception>
         Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters);
 
-        /// <summary>
-        /// Peeks navigation stack
-        /// </summary>
-        /// <returns></returns>
-        string PeekPage();
     }
 }

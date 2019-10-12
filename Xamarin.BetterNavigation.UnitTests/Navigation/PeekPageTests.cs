@@ -48,7 +48,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 await service.GoToAsync(ApplicationPage.LoginPage);
                 await service.GoToAsync(ApplicationPage.MainMenuPage);
 
-                var page = service.PeekPage();
+                var page = service.PeekPageName();
 
                 page.Should().BeEquivalentTo(ApplicationPage.MainMenuPage.ToString());
             });

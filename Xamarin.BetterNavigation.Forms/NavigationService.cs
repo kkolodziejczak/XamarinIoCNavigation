@@ -29,6 +29,13 @@ namespace Xamarin.BetterNavigation.Forms
             => _cancellationTokenSource.Token;
 
         /// <summary>
+        /// Peeks page name from navigation stack
+        /// </summary>
+        /// <returns>Top's page name used for navigation.</returns>
+        public string PeekPageName()
+            => _pageLocator.GetPageName(_pageNavigation.NavigationStack.Last());
+
+        /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="navigation"><see cref="INavigation"/> property from your <see cref="NavigationPage"/>.</param>
@@ -318,13 +325,6 @@ namespace Xamarin.BetterNavigation.Forms
             CancelAndRegenerateCancellationToken();
             return RemoveUnwantedPages(amount, () => GoTo(pageName, navigationParameters), animated);
         }
-
-        /// <summary>
-        /// Peeks navigation stack
-        /// </summary>
-        /// <returns></returns>
-        public string PeekPage()
-            => _pageLocator.GetPageName(_pageNavigation.NavigationStack.Last());
 
         private async Task RemoveUnwantedPages(byte amountOfPagesToRemove, Func<Task> actionBeforeLastPop, bool animated)
         {
