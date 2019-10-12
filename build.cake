@@ -1,9 +1,9 @@
 #addin nuget:?package=Cake.Coveralls&version=0.9.0
 #addin nuget:?package=Cake.Git&version=0.19.0
 #tool nuget:?package=OpenCover&version=4.7.922
-#tool nuget:?package=GitVersion.CommandLine&version=5.0.0-beta1-72
+#tool nuget:?package=GitVersion.CommandLine&version=5.0.1
 #tool nuget:?package=ReportGenerator&version=4.0.13.1
-#tool nuget:?package=ReportUnit&version=1.5.0-beta1
+#tool nuget:?package=ReportUnit
 #tool nuget:?package=coveralls.io&version=1.4.2
 
 //////////////////////////////////////////////////////////////////////
@@ -276,6 +276,7 @@ RunTarget(target);
             WorkingDirectory = testDirectoryPath,
             Arguments = new ProcessArgumentBuilder()
                 .Append("stryker")
+                .AppendSwitch("--excluded-mutations", "['boolean']")
                 .AppendSwitch("--threshold-high", "100")
                 .AppendSwitch("--threshold-low", "99")
                 .AppendSwitch("--threshold-break", "98")
