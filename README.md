@@ -156,6 +156,8 @@ namespace Xamarin.BetterNavigation.Core
             string pageName,
             bool animated,  
             params (string key, object value)[] navigationParameters);
+        
+        string PeekPage() 
     }
 }
 ```
