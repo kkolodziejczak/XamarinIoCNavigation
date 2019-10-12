@@ -166,6 +166,8 @@ namespace Xamarin.BetterNavigation.Core
     {
         CancellationToken CancellationToken { get; }
 
+        string PeekPage();
+
         T NavigationParameters<T>(string parameterKey);
 
         bool ContainsParameterKey(string parameterKey);
@@ -213,8 +215,6 @@ namespace Xamarin.BetterNavigation.Core
             string pageName,
             bool animated,  
             params (string key, object value)[] navigationParameters);
-        
-        string PeekPage() 
     }
 }
 ```
