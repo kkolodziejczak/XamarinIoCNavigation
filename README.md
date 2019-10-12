@@ -72,7 +72,7 @@ public App()
 ```
 
 ### Some Improvements ###
-To keep this package universal as possible. We use strings to navigate but they are not as easy to use as enums. There is easy fix for that. You can create _extension methods_ for all methods of `INavigationService` and use enum instead of string for all pages that You want to use.
+To keep this package universal as possible. We use strings to navigate but they are not as easy to use as enums. There is easy fix for that. You can create _extension methods_ for all methods of `INavigationService` and use enum instead of string for all pages that You want to use. All extension methods are created and ready to being copied in [this file](TestDI/TestDI/Common/NavigationServiceExtensions.cs).
 ##### TestDI.Common.NavigationServiceExtensions.cs #####
 ```C#
     public enum ApplicationPage
@@ -107,6 +107,8 @@ namespace Xamarin.BetterNavigation.Core
 {
     public interface INavigationService
     {
+        CancellationToken CancellationToken { get; }
+
         T NavigationParameters<T>(string parameterKey);
 
         bool ContainsParameterKey(string parameterKey);
