@@ -319,6 +319,13 @@ namespace Xamarin.BetterNavigation.Forms
             return RemoveUnwantedPages(amount, () => GoTo(pageName, navigationParameters), animated);
         }
 
+        /// <summary>
+        /// Peeks navigation stack
+        /// </summary>
+        /// <returns></returns>
+        public string PeekPage()
+            => _pageLocator.GetPageName(_pageNavigation.NavigationStack.Last());
+
         private async Task RemoveUnwantedPages(byte amountOfPagesToRemove, Func<Task> actionBeforeLastPop, bool animated)
         {
             var lastPageIndex = GetLastPageIndex();

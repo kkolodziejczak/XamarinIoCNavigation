@@ -147,5 +147,10 @@ namespace Xamarin.BetterNavigation.Core
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="amount"/> is too big </exception>
         Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters);
 
+        /// <summary>
+        /// Peeks navigation stack
+        /// </summary>
+        /// <returns></returns>
+        string PeekPage();
     }
 }

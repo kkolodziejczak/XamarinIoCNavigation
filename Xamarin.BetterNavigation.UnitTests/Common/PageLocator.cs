@@ -28,5 +28,20 @@ namespace Xamarin.BetterNavigation.UnitTests.Common
         {
             return (Page)_serviceLocator.Get(PageMap[pageName]);
         }
+
+        public string GetPageName(Page page)
+        {
+            var type = page.GetType();
+
+            foreach (var (pageKey, pageType) in PageMap)
+            {
+                if(type == pageType)
+                {
+                    return pageKey;
+                }
+            }
+
+            return default;
+        }
     }
 }
