@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Xamarin.BetterNavigation.Core
@@ -9,6 +10,11 @@ namespace Xamarin.BetterNavigation.Core
     /// </summary>
     public interface INavigationService
     {
+        /// <summary>
+        /// Cancellation token that will be canceled when <see cref="INavigationService"/> will push or pop any page.
+        /// </summary>
+        CancellationToken CancellationToken { get; }
+
         /// <summary>
         /// Navigation parameters passed while navigating to this page.
         /// </summary>
