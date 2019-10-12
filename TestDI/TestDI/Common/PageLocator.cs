@@ -28,7 +28,7 @@ namespace TestDI.Common
             return (Page)_serviceLocator.Get(PageMap[pageName]);
         }
 
-        public string GetPage(Page page)
+        public string GetPageName(Page page)
         {
             foreach (var registeredPage in PageMap)
             {
