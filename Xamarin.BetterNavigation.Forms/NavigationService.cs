@@ -254,6 +254,43 @@ namespace Xamarin.BetterNavigation.Forms
         }
 
         /// <summary>
+        /// Removes all pages from Navigation Stack and inserts all <paramref name="pageNames"/> <see cref="Page"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Page names to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames, params (string key, object value)[] navigationParameters)
+            => PopAllPagesAndGoToAsync(pageNames, false, navigationParameters);
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and inserts all <paramref name="pageNames"/> <see cref="Page"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Page names to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames, bool animated, (string key, object value)[] navigationParameters)
+        {
+            CancelAndRegenerateCancellationToken();
+            return RemoveUnwantedPages((byte)(GetLastPageIndex() + 1), () => InsertAllPagesToNaviagtionStack(pageNames, navigationParameters), animated);
+        }
+
+        private async Task InsertAllPagesToNaviagtionStack(IEnumerable<string> pageNames, (string key, object value)[] navigationParameters)
+        {
+            InitializeNavigationParameters(navigationParameters);
+            var lastPage = GetLastPage();
+            foreach (var page in pageNames)
+            {
+                var pageToPush = _pageLocator.GetPage(page);
+                if (_pushStrategy != null)
+                {
+                    await _pushStrategy.BeforePushAsync(pageToPush);
+                }
+                _externalActionBeforePush?.Invoke(pageToPush);
+
+                _pageNavigation.InsertPageBefore(pageToPush, lastPage);
+            }
+        }
+
+        /// <summary>
         /// Navigate to <paramref name="pageName"/> page.
         /// </summary>
         /// <param name="pageName">Page name to navigate to.</param>

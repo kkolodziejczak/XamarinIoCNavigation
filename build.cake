@@ -83,7 +83,7 @@ Task("BuildTest")
         {
             DotNetCoreBuild(projectFilePath.FullPath, new DotNetCoreBuildSettings
             {
-                Configuration = buildConfiguration,
+                Configuration = "Debug",
 				ArgumentCustomization = arg => arg.AppendSwitch("/p:DebugType","=","Full"),
             });
         }, ProjectFile.csproj);
@@ -91,7 +91,7 @@ Task("BuildTest")
         {
             DotNetCoreBuild(testProjectFilePath.FullPath, new DotNetCoreBuildSettings
             {
-                Configuration = buildConfiguration,
+                Configuration = "Debug",
                 ArgumentCustomization = arg => arg.AppendSwitch("/p:DebugType","=","Full"),
             });
         });
@@ -104,7 +104,7 @@ Task("BuildRelease")
         {
             DotNetCoreBuild(projectFilePath.FullPath, new DotNetCoreBuildSettings
             {
-                Configuration = buildConfiguration,
+                Configuration = "Release",
             });
         }, ProjectFile.csproj);
     });
@@ -125,7 +125,7 @@ Task("TestAndCover")
                             ResultsDirectory = OutputDirectoryPath,
                         });
 
-                    MutationTests(System.IO.Path.GetDirectoryName(testProjectFilePath.FullPath));
+                    // MutationTests(System.IO.Path.GetDirectoryName(testProjectFilePath.FullPath));
                 });
             },
             new FilePath(CoverResultFileName),
@@ -203,16 +203,16 @@ Task("CollectArtifacts")
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 
-Task("Default")
-    .IsDependentOn("Clean")
-    .IsDependentOn("Restore")
-    .IsDependentOn("BuildTest")
-    .IsDependentOn("TestAndCover");
+// Task("Default")
+//     .IsDependentOn("Clean")
+//     .IsDependentOn("Restore")
+//     .IsDependentOn("BuildTest")
+//     .IsDependentOn("TestAndCover");
 
-Task("Deploy")
+Task("Default")
     .IsDependentOn("Test")
-    .IsDependentOn("Clean")
-    .IsDependentOn("Restore")
+    // .IsDependentOn("Clean")
+    // .IsDependentOn("Restore")
     .IsDependentOn("BuildRelease")
     .IsDependentOn("NuGetPack")
     .IsDependentOn("UploadNuGet")

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Xamarin.BetterNavigation.Core</id>
-    <version>@version</version>
+    <version>1.3.0-alpha0029</version>
     <title>Better navigation Plugin for Xamarin Forms</title>
     <authors>Krzysztof Kołodziejczak</authors>
     <licenseUrl>https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE</licenseUrl>

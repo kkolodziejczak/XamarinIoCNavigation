@@ -31,9 +31,9 @@
     <files>
 
         <!--Net Standard-->
-        <file src="Xamarin.BetterNavigation.Forms\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Forms.dll" target="lib\netstandard2.0\Xamarin.BetterNavigation.Forms.dll" />
-        <file src="Xamarin.BetterNavigation.Forms\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Forms.xml" target="lib\netstandard2.0\Xamarin.BetterNavigation.Forms.xml" />
-        <file src="Xamarin.BetterNavigation.Forms\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Forms.pdb" target="lib\netstandard2.0\Xamarin.BetterNavigation.Forms.pdb" />
+        <file src="Xamarin.BetterNavigation.Forms\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Forms.dll" target="lib\netstandard\Xamarin.BetterNavigation.Forms.dll" />
+        <file src="Xamarin.BetterNavigation.Forms\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Forms.xml" target="lib\netstandard\Xamarin.BetterNavigation.Forms.xml" />
+        <file src="Xamarin.BetterNavigation.Forms\bin\Debug\netstandard2.0\Xamarin.BetterNavigation.Forms.pdb" target="lib\netstandard\Xamarin.BetterNavigation.Forms.pdb" />
 
     </files>
     
