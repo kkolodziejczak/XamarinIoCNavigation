@@ -120,7 +120,7 @@ Task("TestAndCover")
                     tool.DotNetCoreTest(testProjectFilePath.FullPath, new DotNetCoreTestSettings()
                         {
                             NoBuild = true,
-                            Configuration = buildConfiguration,
+                            Configuration = "Debug",
                             Logger = "trx",
                             ResultsDirectory = OutputDirectoryPath,
                         });
@@ -158,7 +158,7 @@ Task("UploadCover")
     });
 
 Task("NuGetPack")
-    .WithCriteria(IsOnMaster || IsOnDevelop || IsOnRelease)
+    // .WithCriteria(IsOnMaster || IsOnDevelop || IsOnRelease)
     .Does(() =>
     {
         ExecuteForEachNonTestProject(projectFilePath => 
