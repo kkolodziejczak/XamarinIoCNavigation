@@ -209,7 +209,7 @@ Task("CollectArtifacts")
 //     .IsDependentOn("BuildTest")
 //     .IsDependentOn("TestAndCover");
 
-Task("Default")
+Task("Deploy")
     .IsDependentOn("Test")
     // .IsDependentOn("Clean")
     // .IsDependentOn("Restore")
