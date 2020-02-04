@@ -105,6 +105,21 @@ namespace Xamarin.BetterNavigation.Core
         Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters);
 
         /// <summary>
+        /// Removes all pages from Navigation Stack and inserts all <paramref name="pageNames"/> <see cref="Page"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Page names to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames, params (string key, object value)[] navigationParameters);
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and inserts all <paramref name="pageNames"/> <see cref="Page"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Page names to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames, bool animated, (string key, object value)[] navigationParameters);
+
+        /// <summary>
         /// Navigate to <paramref name="pageName"/> page.
         /// </summary>
         /// <param name="pageName">Page name to navigate to.</param>
