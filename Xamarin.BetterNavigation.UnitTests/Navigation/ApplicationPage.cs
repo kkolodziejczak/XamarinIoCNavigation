@@ -6,5 +6,6 @@
         MainMenuPage,
         SideBar,
         ListViewPage,
+        PageWithNavParameterPage,
     }
 }
