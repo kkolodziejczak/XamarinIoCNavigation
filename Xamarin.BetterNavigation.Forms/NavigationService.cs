@@ -373,6 +373,7 @@ namespace Xamarin.BetterNavigation.Forms
         private async Task GoTo(string pageName, params (string key, object value)[] navigationParameters)
         {
             var lastPage = GetPage(GetLastPageIndex());
+            InitializeNavigationParameters(navigationParameters);
             var newPage = _pageLocator.GetPage(pageName);
             if (_pushStrategy != null)
             {
@@ -380,7 +381,6 @@ namespace Xamarin.BetterNavigation.Forms
             }
             _externalActionBeforePush?.Invoke(newPage);
             _pageNavigation.InsertPageBefore(newPage, lastPage);
-            InitializeNavigationParameters(navigationParameters);
         }
 
         private Page GetPage(int index)
