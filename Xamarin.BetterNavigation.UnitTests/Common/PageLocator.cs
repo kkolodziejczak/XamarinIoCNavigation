@@ -17,6 +17,7 @@ namespace Xamarin.BetterNavigation.UnitTests.Common
             { ApplicationPage.SideBar.ToString(), typeof(StartPage) },
             { ApplicationPage.LoginPage.ToString(), typeof(LoginPage) },
             { ApplicationPage.ListViewPage.ToString(), typeof(ListViewPage) },
+            { ApplicationPage.PageWithNavParameterPage.ToString(), typeof(PageWithNavParameterPage) },
         };
 
         public PageLocator(IServiceLocator serviceLocator)

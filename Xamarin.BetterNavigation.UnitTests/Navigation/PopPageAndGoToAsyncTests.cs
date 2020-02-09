@@ -218,6 +218,24 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             });
         }
 
+        [Test]
+        public Task PopPageAndGoToAsync_Should_InitializeNavigationParametersBeforeCreatingPage()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+
+                navigation.NavigationStack.Should().HaveCount(1);
+
+                await service.GoToAsync(ApplicationPage.PageWithNavParameterPage, ("key", 4));
+                await service.PopPageAndGoToAsync(ApplicationPage.PageWithNavParameterPage, ("key", 5));
+
+                var page = navigation.NavigationStack.Last() as PageWithNavParameterPage;
+                page.Key.Should().Be(5);
+            });
+        }
+
         private void InitializeIoC(params Assembly[] assemblies)
         {
             ServiceLocator = new ServiceLocator(builder =>
