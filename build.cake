@@ -203,16 +203,16 @@ Task("CollectArtifacts")
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 
-// Task("Default")
-//     .IsDependentOn("Clean")
-//     .IsDependentOn("Restore")
-//     .IsDependentOn("BuildTest")
-//     .IsDependentOn("TestAndCover");
+Task("Default")
+    .IsDependentOn("Clean")
+    .IsDependentOn("Restore")
+    .IsDependentOn("BuildTest")
+    .IsDependentOn("TestAndCover");
 
 Task("Deploy")
     .IsDependentOn("Test")
-    // .IsDependentOn("Clean")
-    // .IsDependentOn("Restore")
+    .IsDependentOn("Clean")
+    .IsDependentOn("Restore")
     .IsDependentOn("BuildRelease")
     .IsDependentOn("NuGetPack")
     .IsDependentOn("UploadNuGet")
