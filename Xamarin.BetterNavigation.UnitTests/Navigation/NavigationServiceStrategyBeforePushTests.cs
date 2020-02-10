@@ -5,11 +5,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Autofac;
+using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using Xamarin.BetterNavigation.Forms;
 using Xamarin.BetterNavigation.UnitTests.Common;
 using Xamarin.BetterNavigation.UnitTests.Common.Pages;
+using Xamarin.BetterNavigation.UnitTests.Fakes;
 using Xamarin.BetterNavigation.UnitTests.Fakes.FakeXamarinForms;
 using Xamarin.Forms;
 
@@ -198,6 +200,100 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             await service.PopAllPagesAndGoToAsync(ApplicationPage.LoginPage, true);
 
             pushMock.Verify(p => p.BeforePushAsync(It.IsAny<Page>()), Times.AtLeastOnce);
+        }
+
+        [Test]
+        public async Task NavigationService_StrategyExecuted_beforePush_GoToAsync_Should_HaveTheSameOrder()
+        {
+            // Arrange
+            var strategy = new RecordingStrategy(ServiceLocator.Get<IPageLocator>());
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(), beforePushStrategy: strategy);
+
+            var pages = new List<ApplicationPage>
+            {
+                ApplicationPage.MainMenuPage,
+                ApplicationPage.ListViewPage,
+                ApplicationPage.LoginPage,
+                ApplicationPage.ListViewPage,
+            };
+
+            // Act
+            await service.GoToAsync(pages);
+
+            // Assert
+            strategy.Events.Should().Be(string.Join(string.Empty, pages.Select(p => $"PUSH{p}")));
+        }
+
+        [Test]
+        public async Task NavigationService_StrategyExecuted_PopPageAndGoToAsync_Should_HaveTheSameOrder()
+        {
+            // Arrange
+            var strategy = new RecordingStrategy(ServiceLocator.Get<IPageLocator>());
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(), strategy, strategy);
+            strategy.Reset();
+
+            var pages = new List<ApplicationPage>
+            {
+                ApplicationPage.MainMenuPage,
+                ApplicationPage.ListViewPage,
+                ApplicationPage.LoginPage,
+                ApplicationPage.ListViewPage,
+            };
+
+            // Act
+            await service.PopPageAndGoToAsync(pages);
+
+            // Assert
+            strategy.Events.Should().Be($"POPMainMenuPage{string.Join(string.Empty, pages.Select(p => $"PUSH{p}"))}");
+        }
+
+        [Test]
+        public async Task NavigationService_StrategyExecuted_PopPageAndGoToAsync_Should_HaveTheSameOrderWith_Amount()
+        {
+            // Arrange
+            var strategy = new RecordingStrategy(ServiceLocator.Get<IPageLocator>());
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(), strategy, strategy);
+            await service.GoToAsync(ApplicationPage.SideBar);
+            strategy.Reset();
+
+            var pages = new List<ApplicationPage>
+            {
+                ApplicationPage.MainMenuPage,
+                ApplicationPage.ListViewPage,
+                ApplicationPage.LoginPage,
+                ApplicationPage.ListViewPage,
+            };
+
+            // Act
+            await service.PopPageAndGoToAsync(2, pages);
+
+            // Assert
+            strategy.Events.Should().Be($"POPMainMenuPagePOPSideBar{string.Join(string.Empty, pages.Select(p => $"PUSH{p}"))}");
+        }
+
+        [Test]
+        public async Task NavigationService_StrategyExecuted_beforePush_PopAllPagesAndGoToAsync_Should_HaveTheSameOrder()
+        {
+            // Arrange
+            var strategy = new RecordingStrategy(ServiceLocator.Get<IPageLocator>());
+            var service = new NavigationService(ServiceLocator.Get<INavigation>(), ServiceLocator.Get<IPageLocator>(), strategy, strategy);
+            await service.GoToAsync(ApplicationPage.SideBar);
+
+            strategy.Reset();
+
+            var pages = new List<ApplicationPage>
+            {
+                ApplicationPage.MainMenuPage,
+                ApplicationPage.ListViewPage,
+                ApplicationPage.LoginPage,
+                ApplicationPage.ListViewPage,
+            };
+
+            // Act
+            await service.PopAllPagesAndGoToAsync(pages);
+
+            // Assert
+            strategy.Events.Should().Be($"POPMainMenuPagePOPSideBar{string.Join(string.Empty, pages.Select(p => $"PUSH{p}"))}");
         }
 
     }

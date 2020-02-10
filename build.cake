@@ -83,7 +83,7 @@ Task("BuildTest")
         {
             DotNetCoreBuild(projectFilePath.FullPath, new DotNetCoreBuildSettings
             {
-                Configuration = buildConfiguration,
+                Configuration = "Debug",
 				ArgumentCustomization = arg => arg.AppendSwitch("/p:DebugType","=","Full"),
             });
         }, ProjectFile.csproj);
@@ -91,7 +91,7 @@ Task("BuildTest")
         {
             DotNetCoreBuild(testProjectFilePath.FullPath, new DotNetCoreBuildSettings
             {
-                Configuration = buildConfiguration,
+                Configuration = "Debug",
                 ArgumentCustomization = arg => arg.AppendSwitch("/p:DebugType","=","Full"),
             });
         });
@@ -104,7 +104,7 @@ Task("BuildRelease")
         {
             DotNetCoreBuild(projectFilePath.FullPath, new DotNetCoreBuildSettings
             {
-                Configuration = buildConfiguration,
+                Configuration = "Release",
             });
         }, ProjectFile.csproj);
     });
@@ -120,12 +120,12 @@ Task("TestAndCover")
                     tool.DotNetCoreTest(testProjectFilePath.FullPath, new DotNetCoreTestSettings()
                         {
                             NoBuild = true,
-                            Configuration = buildConfiguration,
+                            Configuration = "Debug",
                             Logger = "trx",
                             ResultsDirectory = OutputDirectoryPath,
                         });
 
-                    MutationTests(System.IO.Path.GetDirectoryName(testProjectFilePath.FullPath));
+                    // MutationTests(System.IO.Path.GetDirectoryName(testProjectFilePath.FullPath));
                 });
             },
             new FilePath(CoverResultFileName),

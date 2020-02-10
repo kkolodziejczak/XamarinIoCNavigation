@@ -196,7 +196,7 @@ namespace Xamarin.BetterNavigation.Forms
                 return Task.CompletedTask;
             }
             CancelAndRegenerateCancellationToken();
-            return RemoveUnwantedPages(lastPageIndex, null, animated);
+            return RemoveUnwantedPagesAsync(lastPageIndex, null, animated);
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace Xamarin.BetterNavigation.Forms
         {
             CheckIfWeCanPopThatManyPages(amount);
             CancelAndRegenerateCancellationToken();
-            return RemoveUnwantedPages(amount, null, animated);
+            return RemoveUnwantedPagesAsync(amount, null, animated);
         }
 
         /// <summary>
@@ -250,7 +250,29 @@ namespace Xamarin.BetterNavigation.Forms
         public Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
         {
             CancelAndRegenerateCancellationToken();
-            return RemoveUnwantedPages((byte)(GetLastPageIndex() + 1), () => GoTo(pageName, navigationParameters), animated);
+            InitializeNavigationParameters(navigationParameters);
+            return RemoveUnwantedPagesAsync((byte)(GetLastPageIndex() + 1), () => InsertBeforeLastPageAsync(pageName), animated);
+        }
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and inserts all <paramref name="pageNames"/> <see cref="Page"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Page names to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames, params (string key, object value)[] navigationParameters)
+            => PopAllPagesAndGoToAsync(pageNames, false, navigationParameters);
+
+        /// <summary>
+        /// Removes all pages from Navigation Stack and inserts all <paramref name="pageNames"/> <see cref="Page"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Page names to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames, bool animated, (string key, object value)[] navigationParameters)
+        {
+            CancelAndRegenerateCancellationToken();
+            InitializeNavigationParameters(navigationParameters);
+            return RemoveUnwantedPagesAsync((byte)(GetLastPageIndex() + 1), () => InsertAllPagesBeforeLastPageAsync(pageNames), animated);
         }
 
         /// <summary>
@@ -269,15 +291,42 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         public async Task GoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
         {
+            CancelAndRegenerateCancellationToken();
             InitializeNavigationParameters(navigationParameters);
             var pageToPush = _pageLocator.GetPage(pageName);
-            if(_pushStrategy != null)
-            {
-                await _pushStrategy.BeforePushAsync(pageToPush);
-            }
-            CancelAndRegenerateCancellationToken();
-            _externalActionBeforePush?.Invoke(pageToPush);
+            await NotifyBeforePushAsync(pageToPush);
             await _pageNavigation.PushAsync(pageToPush, animated);
+        }
+
+        /// <summary>
+        /// Navigate to <paramref name="pageNames"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Pages name to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task GoToAsync(IEnumerable<string> pageNames, params (string key, object value)[] navigationParameters)
+            => GoToAsync(pageNames, false, navigationParameters);
+
+        /// <summary>
+        /// Navigate to <paramref name="pageNames"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Pages name to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public async Task GoToAsync(IEnumerable<string> pageNames, bool animated, params (string key, object value)[] navigationParameters)
+        {
+            InitializeNavigationParameters(navigationParameters);
+            CancelAndRegenerateCancellationToken();
+
+            var pages = pageNames.Select(pageName => _pageLocator.GetPage(pageName));
+            await _pageNavigation.PushAsync(pages.Last(), animated);
+
+            var lastPage = GetLastPage();
+            foreach (var page in pages.Take(pages.Count() - 1)) // skip last page
+            {
+                await NotifyBeforePushAsync(page);
+                _pageNavigation.InsertPageBefore(page, lastPage);
+            }
+            await NotifyBeforePushAsync(lastPage);
         }
 
         /// <summary>
@@ -298,6 +347,23 @@ namespace Xamarin.BetterNavigation.Forms
             => PopPageAndGoToAsync(1, pageName, animated, navigationParameters);
 
         /// <summary>
+        /// Pop current page and go to <paramref name="pageNames"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Pages name to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task PopPageAndGoToAsync(IEnumerable<string> pageNames, params (string key, object value)[] navigationParameters)
+            => PopPageAndGoToAsync(pageNames, false, navigationParameters);
+
+        /// <summary>
+        /// Pop current page and go to <paramref name="pageNames"/> in the same order.
+        /// </summary>
+        /// <param name="pageNames">Pages name to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        public Task PopPageAndGoToAsync(IEnumerable<string> pageNames, bool animated, params (string key, object value)[] navigationParameters)
+            => PopPageAndGoToAsync(1, pageNames, animated, navigationParameters);
+
+        /// <summary>
         /// Pop <paramref name="amount"/> of pages and go to <paramref name="pageName"/> page.
         /// </summary>
         /// <param name="amount">The amount of pages to pop.</param>
@@ -316,17 +382,39 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters)
+            => PopPageAndGoToAsync(amount, new List<string> { pageName }, animated, navigationParameters);
+
+        /// <summary>
+        /// Pop <paramref name="amount"/> of pages and go to <paramref name="pageNames"/> in the same order.
+        /// </summary>
+        /// <param name="amount">The amount of pages to pop.</param>
+        /// <param name="pageNames">Pages name to navigate to.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
+        public Task PopPageAndGoToAsync(byte amount, IEnumerable<string> pageNames, params (string key, object value)[] navigationParameters)
+            => PopPageAndGoToAsync(amount, pageNames, false, navigationParameters);
+
+        /// <summary>
+        /// Pop <paramref name="amount"/> of pages and go to <paramref name="pageNames"/> in the same order.
+        /// </summary>
+        /// <param name="amount">The amount of pages to pop.</param>
+        /// <param name="pageNames">Pages name to navigate to.</param>
+        /// <param name="animated">Animate the passage.</param>
+        /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
+        public Task PopPageAndGoToAsync(byte amount, IEnumerable<string> pageNames, bool animated, params (string key, object value)[] navigationParameters)
         {
-            var pagesOnTheStack = (byte) (GetLastPageIndex() + 1); // +1 because we count starting from 0.
+            var pagesOnTheStack = (byte)(GetLastPageIndex() + 1); // +1 because we count starting from 0.
             if (pagesOnTheStack != amount)
             {
                 CheckIfWeCanPopThatManyPages(amount);
             }
             CancelAndRegenerateCancellationToken();
-            return RemoveUnwantedPages(amount, () => GoTo(pageName, navigationParameters), animated);
+            InitializeNavigationParameters(navigationParameters);
+            return RemoveUnwantedPagesAsync(amount, () => InsertAllPagesBeforeLastPageAsync(pageNames), animated);
         }
 
-        private async Task RemoveUnwantedPages(byte amountOfPagesToRemove, Func<Task> actionBeforeLastPop, bool animated)
+        private async Task RemoveUnwantedPagesAsync(byte amountOfPagesToRemove, Func<Task> actionBeforeLastPop, bool animated)
         {
             var lastPageIndex = GetLastPageIndex();
 
@@ -335,25 +423,16 @@ namespace Xamarin.BetterNavigation.Forms
                 for (var i = 1; i <= amountOfPagesToRemove - 1; i++) // -1 because we always pop minimum once at the end
                 {
                     var pageToRemove = GetPage(lastPageIndex - i);
-                    if (_popStrategy != null)
-                    {
-                        await _popStrategy.BeforePopAsync(pageToRemove);
-                    }
-                    _externalActionBeforePop?.Invoke(pageToRemove);
+                    await NotifyBeforePopAsync(pageToRemove);
                     _pageNavigation.RemovePage(pageToRemove);
                 }
             }
-
-            if(actionBeforeLastPop != null)
+            var lastPage = GetLastPage();
+            await NotifyBeforePopAsync(lastPage);
+            if (actionBeforeLastPop != null)
             {
                 await actionBeforeLastPop.Invoke();
             }
-            var lastPage = GetLastPage();
-            if (_popStrategy != null)
-            {
-                await _popStrategy.BeforePopAsync(lastPage);
-            }
-            _externalActionBeforePop?.Invoke(lastPage);
             await _pageNavigation.PopAsync(animated);
         }
 
@@ -370,17 +449,23 @@ namespace Xamarin.BetterNavigation.Forms
             }
         }
 
-        private async Task GoTo(string pageName, params (string key, object value)[] navigationParameters)
+        private async Task InsertBeforeLastPageAsync(string pageName)
         {
             var lastPage = GetPage(GetLastPageIndex());
             var newPage = _pageLocator.GetPage(pageName);
-            if (_pushStrategy != null)
-            {
-                await _pushStrategy.BeforePushAsync(newPage);
-            }
-            _externalActionBeforePush?.Invoke(newPage);
+            await NotifyBeforePushAsync(newPage);
             _pageNavigation.InsertPageBefore(newPage, lastPage);
-            InitializeNavigationParameters(navigationParameters);
+        }
+
+        private async Task InsertAllPagesBeforeLastPageAsync(IEnumerable<string> pageNames)
+        {
+            var lastPage = GetLastPage();
+            foreach (var page in pageNames)
+            {
+                var pageToPush = _pageLocator.GetPage(page);
+                await NotifyBeforePushAsync(pageToPush);
+                _pageNavigation.InsertPageBefore(pageToPush, lastPage);
+            }
         }
 
         private Page GetPage(int index)
@@ -400,12 +485,31 @@ namespace Xamarin.BetterNavigation.Forms
                 _navigationParameters.Add(key, value);
             }
         }
-        
+
         private void CancelAndRegenerateCancellationToken()
         {
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
         }
+
+        private async Task NotifyBeforePushAsync(Page newPage)
+        {
+            if (_pushStrategy != null)
+            {
+                await _pushStrategy.BeforePushAsync(newPage);
+            }
+            _externalActionBeforePush?.Invoke(newPage);
+        }
+
+        private async Task NotifyBeforePopAsync(Page newPage)
+        {
+            if (_popStrategy != null)
+            {
+                await _popStrategy.BeforePopAsync(newPage);
+            }
+            _externalActionBeforePop?.Invoke(newPage);
+        }
+
     }
 }

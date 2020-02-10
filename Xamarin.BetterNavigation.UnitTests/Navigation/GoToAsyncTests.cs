@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -100,6 +101,53 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
             });
         }
 
+        [Test]
+        public Task GoToAsync_Should_IntializeNavParametersBeforeCreatingPage()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                // Arrange
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+
+                navigation.NavigationStack.Should().HaveCount(1);
+                await service.GoToAsync(ApplicationPage.PageWithNavParameterPage, ("key", 123));
+
+                // Act
+                await service.GoToAsync(ApplicationPage.PageWithNavParameterPage, ("key", 5));
+
+                // Assert
+                var page = navigation.NavigationStack.Last() as PageWithNavParameterPage;
+                page.Key.Should().Be(5);
+            });
+        }
+
+        [Test]
+        public Task GoToAsync_List_Should_IntializeNavParametersBeforeCreatingPage()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                // Arrange
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+
+                navigation.NavigationStack.Should().HaveCount(1);
+
+                // Act
+                await service.GoToAsync(new List<ApplicationPage>
+                {
+                    ApplicationPage.PageWithNavParameterPage,
+                    ApplicationPage.PageWithNavParameterPage,
+                }, ("key", 5));
+
+                // Assert
+                navigation.NavigationStack.Should().HaveCount(3);
+                foreach (var page in navigation.NavigationStack.Skip(1))
+                {
+                    page.Should().BeOfType(typeof(PageWithNavParameterPage));
+                }
+            });
+        }
 
         private void InitializeIoC(params Assembly[] assemblies)
         {
