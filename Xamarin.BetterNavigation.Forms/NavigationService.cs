@@ -352,7 +352,7 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="pageNames">Pages name to navigate to.</param>
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         public Task PopPageAndGoToAsync(IEnumerable<string> pageNames, params (string key, object value)[] navigationParameters)
-            => PopPageAndGoToAsync(1, pageNames, false, navigationParameters);
+            => PopPageAndGoToAsync(pageNames, false, navigationParameters);
 
         /// <summary>
         /// Pop current page and go to <paramref name="pageNames"/> in the same order.
@@ -382,16 +382,7 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when you want to remove too many pages from the Navigation Stack.</exception>
         public Task PopPageAndGoToAsync(byte amount, string pageName, bool animated, params (string key, object value)[] navigationParameters)
-        {
-            var pagesOnTheStack = (byte)(GetLastPageIndex() + 1); // +1 because we count starting from 0.
-            if (pagesOnTheStack != amount)
-            {
-                CheckIfWeCanPopThatManyPages(amount);
-            }
-            CancelAndRegenerateCancellationToken();
-            InitializeNavigationParameters(navigationParameters);
-            return RemoveUnwantedPagesAsync(amount, () => InsertBeforeLastPageAsync(pageName), animated);
-        }
+            => PopPageAndGoToAsync(amount, new List<string> { pageName }, animated, navigationParameters);
 
         /// <summary>
         /// Pop <paramref name="amount"/> of pages and go to <paramref name="pageNames"/> in the same order.

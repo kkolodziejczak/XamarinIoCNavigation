@@ -6,12 +6,13 @@ echo "================================="
 echo "Cleanup"
 echo "================================="
 cleanup -y
+rm ./Artifacts -R
 
 echo "================================="
 echo "Build Debug"
 echo "================================="
 
-dotnet build ./Xamarin.BetterNavigation.Forms/Xamarin.BetterNavigation.Forms.csproj -c Debug
+dotnet build ./Xamarin.BetterNavigation.UnitTests/Xamarin.BetterNavigation.UnitTests.csproj -c Debug
 
 echo "================================="
 echo "Test"
@@ -19,8 +20,8 @@ echo "================================="
 testProjectPath="./Xamarin.BetterNavigation.UnitTests/Xamarin.BetterNavigation.UnitTests.csproj"
 dllPath="./Xamarin.BetterNavigation.UnitTests/bin/Debug/netcoreapp2.0/Xamarin.BetterNavigation.UnitTests.dll"
 
-dotnet coverlet $dllPath --target "dotnet" --targetargs "test $testProjectPath --no-build" --format opencover --include "[Xamarin.BetterNavigation.Core]*" --include "[Xamarin.BetterNavigation.Forms]*" --output "./Artifacts/"
-dotnet reportgenerator "-reports:./Artifacts/coverage.opencover.xml" "-targetdir:./Artifacts/CoverageReport"
+dotnet coverlet $dllPath --target "dotnet" --targetargs "test $testProjectPath --no-build" --format opencover --include "[Xamarin.BetterNavigation.Core]*" --include "[Xamarin.BetterNavigation.Forms]*" --output "./Artifacts/coverage.xml"
+dotnet reportgenerator "-reports:./Artifacts/coverage.xml" "-targetdir:./Artifacts/CoverageReport"
 
 echo "================================="
 echo "> Mutation tests"
