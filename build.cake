@@ -158,7 +158,7 @@ Task("UploadCover")
     });
 
 Task("NuGetPack")
-    // .WithCriteria(IsOnMaster || IsOnDevelop || IsOnRelease)
+    .WithCriteria(IsOnMaster || IsOnDevelop || IsOnRelease)
     .Does(() =>
     {
         ExecuteForEachNonTestProject(projectFilePath => 
