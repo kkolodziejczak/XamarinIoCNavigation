@@ -14,11 +14,7 @@
     <tags>xamarin, forms, xamarin.forms, quick, easy, navigation</tags>
   
     <dependencies>
-    
-      <group>
-        <dependency id="NETStandard.Library" version="2.0.0" />
-      </group>
-
+      <dependency id="NETStandard.Library" version="2.0.0" />
     </dependencies>
 
   </metadata>
@@ -26,9 +22,9 @@
     <files>
 
         <!--Net Standard-->
-        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.dll" target="lib\netstandard2.0\Xamarin.BetterNavigation.Core.dll" />
-        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.xml" target="lib\netstandard2.0\Xamarin.BetterNavigation.Core.xml" />
-        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.pdb" target="lib\netstandard2.0\Xamarin.BetterNavigation.Core.pdb" />
+        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.dll" target="lib\netstandard\Xamarin.BetterNavigation.Core.dll" />
+        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.xml" target="lib\netstandard\Xamarin.BetterNavigation.Core.xml" />
+        <file src="Xamarin.BetterNavigation.Core\bin\Release\netstandard2.0\Xamarin.BetterNavigation.Core.pdb" target="lib\netstandard\Xamarin.BetterNavigation.Core.pdb" />
 
     </files>
     

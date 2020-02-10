@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -233,6 +234,116 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
 
                 var page = navigation.NavigationStack.Last() as PageWithNavParameterPage;
                 page.Key.Should().Be(5);
+            });
+        }
+
+        [Test]
+        public Task PopPageAndGoToAsync_List_Should_GoToProperPages()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+
+                navigation.NavigationStack.Should().HaveCount(1);
+
+                await service.PopPageAndGoToAsync(new List<ApplicationPage>
+                {
+                    ApplicationPage.MainMenuPage,
+                    ApplicationPage.LoginPage
+                });
+
+                navigation.NavigationStack.Any(p => p is MainPage).Should().BeTrue();
+                navigation.NavigationStack.Any(p => p is LoginPage).Should().BeTrue();
+                navigation.NavigationStack.Should().HaveCount(2);
+            });
+        }
+
+        [Test]
+        public Task PopPageAndGoToAsync_List_Should_PopAmountAndGoToProperPages()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.MainMenuPage);
+
+                navigation.NavigationStack.Should().HaveCount(2);
+
+                await service.PopPageAndGoToAsync(2, new List<ApplicationPage>
+                {
+                    ApplicationPage.MainMenuPage,
+                    ApplicationPage.LoginPage
+                });
+
+                navigation.NavigationStack.Any(p => p is MainPage).Should().BeTrue();
+                navigation.NavigationStack.Any(p => p is LoginPage).Should().BeTrue();
+                navigation.NavigationStack.Should().HaveCount(2);
+            });
+        }
+
+        [Test]
+        public Task PopPageAndGoToAsync_List_Should_ThrowExceptionWhenAmountIsTooBig()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.MainMenuPage);
+
+                navigation.NavigationStack.Should().HaveCount(2);
+
+                Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+                {
+                    return service.PopPageAndGoToAsync(5, new List<ApplicationPage>
+                    {
+                        ApplicationPage.MainMenuPage,
+                        ApplicationPage.LoginPage
+                    });
+                });
+            });
+        }
+
+        [Test]
+        public Task PopPageAndGoToAsync_List_Should_ThrowExceptionWhenAmountIsZero()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.MainMenuPage);
+
+                navigation.NavigationStack.Should().HaveCount(2);
+
+                Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+                {
+                    return service.PopPageAndGoToAsync(0, new List<ApplicationPage>
+                    {
+                        ApplicationPage.MainMenuPage,
+                        ApplicationPage.LoginPage
+                    });
+                });
+            });
+        }
+
+        [Test]
+        public Task PopPageAndGoToAsync_List_Should_GoToPages()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+                await service.GoToAsync(ApplicationPage.MainMenuPage);
+
+                navigation.NavigationStack.Should().HaveCount(2);
+
+                await service.PopPageAndGoToAsync(new List<ApplicationPage>
+                {
+                    ApplicationPage.MainMenuPage,
+                    ApplicationPage.LoginPage
+                });
+
+                navigation.NavigationStack.Should().HaveCount(3);
             });
         }
 

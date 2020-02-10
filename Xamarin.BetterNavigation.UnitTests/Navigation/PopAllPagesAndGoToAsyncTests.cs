@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -127,6 +128,55 @@ namespace Xamarin.BetterNavigation.UnitTests.Navigation
                 navigation.NavigationStack.Last().Should().BeOfType(typeof(PageWithNavParameterPage));
                 var page = navigation.NavigationStack.Last() as PageWithNavParameterPage;
                 page.Key.Should().Be(5);
+            });
+        }
+
+        [Test]
+        public Task PopAllPagesAndGoToAsync_List_Should_PushAllPagesAsync()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+
+                navigation.NavigationStack.Should().HaveCount(1);
+
+                await service.GoToAsync(ApplicationPage.PageWithNavParameterPage, ("key", 4));
+                await service.PopAllPagesAndGoToAsync(new List<ApplicationPage>
+                {
+                    ApplicationPage.PageWithNavParameterPage,
+                    ApplicationPage.PageWithNavParameterPage,
+                }, ("key", 5));
+
+                navigation.NavigationStack.Should().HaveCount(2);
+                foreach (var page in navigation.NavigationStack.Skip(1))
+                {
+                    page.Should().BeOfType(typeof(PageWithNavParameterPage));
+                }
+            });
+        }
+
+        [Test]
+        public Task PopAllPagesAndGoToAsync_List_Should_InitializeParametersBeforeActions()
+        {
+            return ServiceLocator.BeginLifetimeScopeAsync(async serviceLocator =>
+            {
+                var service = serviceLocator.Get<INavigationService>();
+                var navigation = serviceLocator.Get<INavigation>();
+
+                navigation.NavigationStack.Should().HaveCount(1);
+
+                await service.GoToAsync(ApplicationPage.PageWithNavParameterPage, ("key", 4));
+                await service.PopAllPagesAndGoToAsync(new List<ApplicationPage>
+                {
+                    ApplicationPage.PageWithNavParameterPage,
+                    ApplicationPage.PageWithNavParameterPage,
+                }, ("key", 5));
+
+                var page1 = navigation.NavigationStack.First() as PageWithNavParameterPage;
+                var page2 = navigation.NavigationStack.Last() as PageWithNavParameterPage;
+                page1.Key.Should().Be(5);
+                page2.Key.Should().Be(5);
             });
         }
 

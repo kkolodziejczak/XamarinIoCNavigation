@@ -1,11 +1,12 @@
 # XamarinIoCNavigation
-Concept on how to create your own navigation using IoC container in Xamarin.
+Concept on how to create your own navigation using IoC container in Xamarin. Based on that concept NuGet Package was created, and can be used in any Xamarin Forms application.
 
 ## Shortcuts
 - [Basic usage](#Basic-usage)
 - [All possibilities](#all-possibilities-of-xamarinbetternavigation)
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/kkolodziejczak/XamarinIoCNavigation/blob/master/LICENSE)
+[![Downloads](https://img.shields.io/nuget/dt/Xamarin.BetterNavigation.Forms)](https://www.nuget.org/packages/Xamarin.BetterNavigation.Forms/)
 
 
  ## Build Status ##
@@ -27,10 +28,10 @@ Concept on how to create your own navigation using IoC container in Xamarin.
 
 `Xamarin.BetterNavigation.Core` have `INavigationService` interface to use inside your library that doesn't have reference to Xamarin. This helps to keep all references to minimum and invert dependencies of navigation in code.
 
-### Basic usage ###
+## Basic usage ##
 To use `NavigationService` you need to have Xamarin `NavigationPage` from it you can get `INavigation` property that is used to navigate through application. After that you need to create class that implements `Xamarin.BetterNavigation.Forms.IPageLocator` interface. This class converts strings to Xamarin `Page`'s. 
 ### Page Locator ###
-##### TestDI.Common.PageLocator.cs #####
+#### TestDI.Common.PageLocator.cs ####
 ```C#
 public class PageLocator : IPageLocator
 {
@@ -130,7 +131,7 @@ public App()
 ```
 ### Some Improvements ###
 To keep this package universal as possible. We use strings to navigate but they are not as easy to use as enums. There is easy fix for that. You can create _extension methods_ for all methods of `INavigationService` and use enum instead of string for all pages that You want to use. All extension methods are created and ready to being copied in [this file](TestDI/TestDI/Common/NavigationServiceExtensions.cs).
-##### TestDI.Common.NavigationServiceExtensions.cs #####
+#### TestDI.Common.NavigationServiceExtensions.cs ####
 ```C#
     public enum ApplicationPage
     {
@@ -158,7 +159,7 @@ To keep this package universal as possible. We use strings to navigate but they 
 ```
 
 
-## All possibilities of Xamarin.BetterNavigation ###
+## All possibilities of Xamarin.BetterNavigation ##
 ```C#
 namespace Xamarin.BetterNavigation.Core
 {
@@ -193,10 +194,24 @@ namespace Xamarin.BetterNavigation.Core
             bool animated,
             params (string key, object value)[] navigationParameters);
 
+        Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames,
+            params (string key, object value)[] navigationParameters);
+
+        Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames,
+            bool animated,
+            params (string key, object value)[] navigationParameters);
+
         Task GoToAsync(string pageName, 
             params (string key, object value)[] navigationParameters);
 
         Task GoToAsync(string pageName,
+            bool animated,
+            params (string key, object value)[] navigationParameters);
+
+        Task GoToAsync(IEnumerable<string> pageNames,
+            params (string key, object value)[] navigationParameters);
+
+        Task GoToAsync(IEnumerable<string> pageNames,
             bool animated,
             params (string key, object value)[] navigationParameters);
 
@@ -207,6 +222,13 @@ namespace Xamarin.BetterNavigation.Core
             bool animated, 
             params (string key, object value)[] navigationParameters);
 
+        Task PopPageAndGoToAsync(IEnumerable<string> pageNames,
+            params (string key, object value)[] navigationParameters);
+
+        Task PopPageAndGoToAsync(IEnumerable<string> pageNames,
+            bool animated,
+            params (string key, object value)[] navigationParameters);
+
         Task PopPageAndGoToAsync(byte amount,
             string pageName, 
             params (string key, object value)[] navigationParameters);
@@ -214,6 +236,15 @@ namespace Xamarin.BetterNavigation.Core
         Task PopPageAndGoToAsync(byte amount,
             string pageName,
             bool animated,  
+            params (string key, object value)[] navigationParameters);
+
+        Task PopPageAndGoToAsync(byte amount,
+            IEnumerable<string> pageNames,
+            params (string key, object value)[] navigationParameters);
+
+        Task PopPageAndGoToAsync(byte amount,
+            IEnumerable<string> pageNames,
+            bool animated,
             params (string key, object value)[] navigationParameters);
     }
 }
