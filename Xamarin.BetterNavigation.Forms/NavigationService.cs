@@ -11,7 +11,7 @@ namespace Xamarin.BetterNavigation.Forms
     /// <summary>
     /// <see cref="NavigationService"/> provides navigation through your application.
     /// </summary>
-    public class NavigationService : INavigationService
+    public class NavigationService : INavigationService, IDisposable
     {
         private readonly INavigation _pageNavigation;
         private readonly IPageLocator _pageLocator;
@@ -20,6 +20,7 @@ namespace Xamarin.BetterNavigation.Forms
         private readonly Action<Page> _externalActionBeforePop;
         private readonly IPopStrategy _popStrategy;
         private readonly IPushStrategy _pushStrategy;
+        private CancellationTokenSource _cancelledCancallationTokenSource;
         private CancellationTokenSource _cancellationTokenSource;
 
         /// <summary>
@@ -196,7 +197,8 @@ namespace Xamarin.BetterNavigation.Forms
                 return Task.CompletedTask;
             }
             CancelAndRegenerateCancellationToken();
-            return RemoveUnwantedPagesAsync(lastPageIndex, null, animated);
+            return RemoveUnwantedPagesAsync(lastPageIndex, null, animated)
+                .ContinueWith(_ => DisposeCanceledTokenSource());
         }
 
         /// <summary>
@@ -230,7 +232,8 @@ namespace Xamarin.BetterNavigation.Forms
         {
             CheckIfWeCanPopThatManyPages(amount);
             CancelAndRegenerateCancellationToken();
-            return RemoveUnwantedPagesAsync(amount, null, animated);
+            return RemoveUnwantedPagesAsync(amount, null, animated)
+                .ContinueWith(_ => DisposeCanceledTokenSource());
         }
 
         /// <summary>
@@ -249,9 +252,10 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         public Task PopAllPagesAndGoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
         {
-            CancelAndRegenerateCancellationToken();
             InitializeNavigationParameters(navigationParameters);
-            return RemoveUnwantedPagesAsync((byte)(GetLastPageIndex() + 1), () => InsertBeforeLastPageAsync(pageName), animated);
+            CancelAndRegenerateCancellationToken();
+            return RemoveUnwantedPagesAsync((byte)(GetLastPageIndex() + 1), () => InsertBeforeLastPageAsync(pageName), animated)
+                .ContinueWith(_ => DisposeCanceledTokenSource());
         }
 
         /// <summary>
@@ -270,9 +274,10 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         public Task PopAllPagesAndGoToAsync(IEnumerable<string> pageNames, bool animated, (string key, object value)[] navigationParameters)
         {
-            CancelAndRegenerateCancellationToken();
             InitializeNavigationParameters(navigationParameters);
-            return RemoveUnwantedPagesAsync((byte)(GetLastPageIndex() + 1), () => InsertAllPagesBeforeLastPageAsync(pageNames), animated);
+            CancelAndRegenerateCancellationToken();
+            return RemoveUnwantedPagesAsync((byte)(GetLastPageIndex() + 1), () => InsertAllPagesBeforeLastPageAsync(pageNames), animated)
+                .ContinueWith(_ => DisposeCanceledTokenSource());
         }
 
         /// <summary>
@@ -291,11 +296,12 @@ namespace Xamarin.BetterNavigation.Forms
         /// <param name="navigationParameters">Parameters to pass with this navigation.</param>
         public async Task GoToAsync(string pageName, bool animated, params (string key, object value)[] navigationParameters)
         {
-            CancelAndRegenerateCancellationToken();
             InitializeNavigationParameters(navigationParameters);
+            CancelAndRegenerateCancellationToken();
             var pageToPush = _pageLocator.GetPage(pageName);
             await NotifyBeforePushAsync(pageToPush);
-            await _pageNavigation.PushAsync(pageToPush, animated);
+            await _pageNavigation.PushAsync(pageToPush, animated)
+                .ContinueWith(_ => DisposeCanceledTokenSource());
         }
 
         /// <summary>
@@ -327,6 +333,7 @@ namespace Xamarin.BetterNavigation.Forms
                 _pageNavigation.InsertPageBefore(page, lastPage);
             }
             await NotifyBeforePushAsync(lastPage);
+            DisposeCanceledTokenSource();
         }
 
         /// <summary>
@@ -409,9 +416,10 @@ namespace Xamarin.BetterNavigation.Forms
             {
                 CheckIfWeCanPopThatManyPages(amount);
             }
-            CancelAndRegenerateCancellationToken();
             InitializeNavigationParameters(navigationParameters);
-            return RemoveUnwantedPagesAsync(amount, () => InsertAllPagesBeforeLastPageAsync(pageNames), animated);
+            CancelAndRegenerateCancellationToken();
+            return RemoveUnwantedPagesAsync(amount, () => InsertAllPagesBeforeLastPageAsync(pageNames), animated)
+                .ContinueWith(_ => DisposeCanceledTokenSource());
         }
 
         private async Task RemoveUnwantedPagesAsync(byte amountOfPagesToRemove, Func<Task> actionBeforeLastPop, bool animated)
@@ -489,8 +497,17 @@ namespace Xamarin.BetterNavigation.Forms
         private void CancelAndRegenerateCancellationToken()
         {
             _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
+            _cancelledCancallationTokenSource = _cancellationTokenSource;
             _cancellationTokenSource = new CancellationTokenSource();
+        }
+
+        private void DisposeCanceledTokenSource()
+        {
+            if(_cancelledCancallationTokenSource != null)
+            {
+                _cancelledCancallationTokenSource.Dispose();
+                _cancelledCancallationTokenSource = null;
+            }
         }
 
         private async Task NotifyBeforePushAsync(Page newPage)
@@ -511,5 +528,13 @@ namespace Xamarin.BetterNavigation.Forms
             _externalActionBeforePop?.Invoke(newPage);
         }
 
+        public void Dispose()
+        {
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
+            _cancelledCancallationTokenSource?.Dispose();
+            _cancelledCancallationTokenSource = null;
+        }
     }
 }
